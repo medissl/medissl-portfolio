@@ -19,8 +19,8 @@ export function AnimatedStatement() {
         <div className="statement__signal" aria-hidden="true" />
         <p className="eyebrow">WHY I MAKE THINGS</p>
         <blockquote>
-          I like creating things with care, especially the small projects that
-          begin with a random idea and suddenly turn into something real.
+          I like creating and developing things filled with love, especially the
+          small projects that begin with a random idea and suddenly turn into something real.
           <span className="statement__cursor" aria-hidden="true">_</span>
         </blockquote>
       </motion.div>

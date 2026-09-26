@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const phrases = [
-  { text: "I make things that feel alive.", size: "default" },
+  { text: "I make things that feel alive.", size: "english" },
   { text: "生きているように感じるものをつくる。", size: "dense" },
   { text: "살아 있는 듯한 것을 만듭니다.", size: "compact" },
   { text: "我创造有生命感的东西。", size: "default" },
@@ -102,20 +102,26 @@ export function AnimatedHeroTitle() {
         aria-label="I make things that feel alive."
       >
         <span className="hero-title__text" aria-hidden="true">
-          {display.split("").map((character, index) => (
-            <span
-              className={
-                index < revealedCount
-                  ? "hero-title__settled"
-                  : "hero-title__scramble"
-              }
-              key={`${phraseIndex}-${index}`}
-            >
-              {character}
-            </span>
-          ))}
+          {display.split("").map((character, index) => {
+            const isLast = index === display.length - 1;
+
+            return (
+              <span
+                className={`${
+                  index < revealedCount
+                    ? "hero-title__settled"
+                    : "hero-title__scramble"
+                }${isLast ? " hero-title__tail" : ""}`}
+                key={`${phraseIndex}-${index}`}
+              >
+                {character}
+                {isLast && (
+                  <span className="hero-title__cursor" aria-hidden="true">_</span>
+                )}
+              </span>
+            );
+          })}
         </span>
-        <span className="hero-title__cursor" aria-hidden="true">_</span>
       </h1>
     </div>
   );

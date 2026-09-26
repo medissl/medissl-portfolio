@@ -249,8 +249,12 @@ main { min-height: 70vh; }
   transition: height .34s cubic-bezier(.22, 1, .36, 1);
 }
 
+.hero-title-shell--english {
+  height: clamp(226px, 20vw, 292px);
+}
+
 .hero-title-shell--compact {
-  height: clamp(208px, 18vw, 258px);
+  height: clamp(210px, 18vw, 254px);
 }
 
 .hero-title-shell--dense {
@@ -277,8 +281,12 @@ main { min-height: 70vh; }
     letter-spacing .34s ease;
 }
 
+.hero-title--english {
+  font-size: clamp(3.45rem, 6.35vw, 6.45rem);
+}
+
 .hero-title--compact {
-  font-size: clamp(3.25rem, 6.15vw, 6.15rem);
+  font-size: clamp(2.95rem, 5.55vw, 5.6rem);
 }
 
 .hero-title--dense {
@@ -306,9 +314,16 @@ main { min-height: 70vh; }
   transition: color .14s ease;
 }
 
+.hero-title__tail {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .hero-title__cursor {
   display: inline-block;
-  margin-left: .05em;
+  margin-left: .04em;
+  vertical-align: .04em;
+  line-height: 1;
   color: var(--cyan);
   text-shadow: 0 0 14px rgba(104, 237, 255, .72);
   animation: cursor-blink .8s steps(1) infinite;
@@ -392,10 +407,14 @@ main { min-height: 70vh; }
   border-radius: 999px;
   display: grid;
   place-items: center;
-  color: var(--cyan);
-  font-size: 11px;
-  letter-spacing: .28em;
+  color: #8eeeff;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  letter-spacing: .095em;
   font-weight: 800;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 0 16px rgba(85, 217, 255, .28);
   background:
     radial-gradient(circle, rgba(69, 208, 255, .18), rgba(0,0,0,.08) 56%, transparent 70%);
   box-shadow:
@@ -1497,8 +1516,12 @@ main { min-height: 70vh; }
     height: clamp(250px, 38vw, 330px);
   }
 
+  .hero-title-shell--english {
+    height: clamp(232px, 34vw, 292px);
+  }
+
   .hero-title-shell--compact {
-    height: clamp(215px, 31vw, 275px);
+    height: clamp(214px, 30vw, 268px);
   }
 
   .hero-title-shell--dense {
@@ -1509,8 +1532,12 @@ main { min-height: 70vh; }
     height: clamp(225px, 33vw, 285px);
   }
 
+  .hero-title--english {
+    font-size: clamp(3.05rem, 7.6vw, 4.9rem);
+  }
+
   .hero-title--compact {
-    font-size: clamp(3rem, 8vw, 5.15rem);
+    font-size: clamp(2.72rem, 7.25vw, 4.6rem);
   }
 
   .hero-title--dense,
@@ -1587,8 +1614,12 @@ main { min-height: 70vh; }
     height: 300px;
   }
 
+  .hero-title-shell--english {
+    height: 260px;
+  }
+
   .hero-title-shell--compact {
-    height: 246px;
+    height: 242px;
   }
 
   .hero-title-shell--dense {
@@ -1603,8 +1634,12 @@ main { min-height: 70vh; }
     font-size: clamp(3.15rem, 14vw, 5rem);
   }
 
+  .hero-title--english {
+    font-size: clamp(2.75rem, 12.4vw, 4.35rem);
+  }
+
   .hero-title--compact {
-    font-size: clamp(2.55rem, 11.8vw, 4.2rem);
+    font-size: clamp(2.35rem, 10.9vw, 3.8rem);
   }
 
   .hero-title--dense,
@@ -1722,8 +1757,12 @@ main { min-height: 70vh; }
     height: 285px;
   }
 
+  .hero-title-shell--english {
+    height: 250px;
+  }
+
   .hero-title-shell--compact {
-    height: 238px;
+    height: 232px;
   }
 
   .hero-title-shell--dense {
