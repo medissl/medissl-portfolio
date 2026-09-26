@@ -112,24 +112,21 @@ main { min-height: 70vh; }
 }
 
 .brand__mark {
-  display: inline-block;
-  font-size: 31px;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: -.12em;
-  color: var(--cyan);
-  text-shadow:
-    0 0 8px rgba(113, 242, 255, .55),
-    0 0 24px rgba(65, 183, 255, .32);
-  transform: skewX(-4deg);
-  transition: transform .25s ease, text-shadow .25s ease;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  overflow: visible;
+  filter:
+    drop-shadow(0 0 7px rgba(113, 242, 255, .4))
+    drop-shadow(0 0 20px rgba(65, 183, 255, .2));
+  transition: transform .25s ease, filter .25s ease;
 }
 
 .brand:hover .brand__mark {
-  transform: skewX(-4deg) scale(1.08);
-  text-shadow:
-    0 0 10px rgba(113, 242, 255, .9),
-    0 0 32px rgba(65, 183, 255, .48);
+  transform: scale(1.07) rotate(-2deg);
+  filter:
+    drop-shadow(0 0 9px rgba(113, 242, 255, .75))
+    drop-shadow(0 0 26px rgba(65, 183, 255, .35));
 }
 
 .brand__name {
@@ -197,16 +194,35 @@ main { min-height: 70vh; }
 
 .hero__copy { max-width: 740px; }
 
+.hero-title-shell {
+  height: 3.05em;
+  max-width: 790px;
+  overflow: hidden;
+  font-size: clamp(3.8rem, 7.2vw, 7.25rem);
+}
+
 .hero-title {
   margin: 0;
-  min-height: 2.05em;
-  max-width: 790px;
-  font-size: clamp(3.8rem, 7.2vw, 7.25rem);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-size: 1em;
   line-height: .94;
   letter-spacing: -.066em;
   font-weight: 720;
   color: #f8fdff;
   text-shadow: 0 0 34px rgba(76, 209, 255, .08);
+}
+
+.hero-title__settled {
+  color: #f8fdff;
+  transition: color .14s ease, text-shadow .14s ease;
+}
+
+.hero-title__scramble {
+  color: rgba(147, 173, 194, .42);
+  text-shadow: none;
+  transition: color .14s ease;
 }
 
 .hero-title__cursor {
@@ -1314,7 +1330,7 @@ main { min-height: 70vh; }
     padding-top: 100px;
   }
 
-  .hero-title { min-height: 2.6em; }
+  .hero-title-shell { height: 3.25em; }
 
   .hero__visual {
     height: 410px;
@@ -1365,16 +1381,24 @@ main { min-height: 70vh; }
   .site-header { height: 72px; }
   .nav { gap: 15px; font-size: 12px; }
   .brand__name { display: none; }
-  .brand__mark { font-size: 29px; }
+  .brand__mark {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
 
   .hero {
     padding-block: 64px;
     gap: 25px;
   }
 
-  .hero-title {
-    min-height: 3.25em;
+  .hero-title-shell {
+    height: 4.05em;
     font-size: clamp(3.2rem, 15vw, 5.2rem);
+  }
+
+  .hero-title {
+    font-size: 1em;
   }
 
   .hero__visual { height: 330px; }

@@ -10,6 +10,23 @@ const publicLinks = [
   { href: "https://github.com/medissl", label: "GitHub", external: true },
 ];
 
+function BrandMark() {
+  return (
+    <svg
+      className="brand__mark"
+      viewBox="0 0 64 64"
+      role="img"
+      aria-label="Medi logo"
+    >
+      <rect width="64" height="64" rx="14" fill="#03060d" />
+      <path
+        d="M14 47V17h7l11 17 11-17h7v30h-7V28L32 44 21 28v19z"
+        fill="#71f2ff"
+      />
+    </svg>
+  );
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
@@ -21,7 +38,7 @@ export function SiteHeader() {
         className="brand"
         aria-label={isAdmin ? "Admin home" : "Medi home"}
       >
-        <span className="brand__mark" aria-hidden="true">M</span>
+        <BrandMark />
         {!isAdmin && <span className="brand__name">MEDISSL</span>}
       </Link>
 

@@ -17,13 +17,16 @@ export function AnimatedHeroTitle() {
   const reducedMotion = useReducedMotion();
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [display, setDisplay] = useState(phrases[0]);
+  const [revealedCount, setRevealedCount] = useState(phrases[0].length);
 
   useEffect(() => {
     const target = phrases[phraseIndex];
 
     if (reducedMotion) {
+      setDisplay(target);
+      setRevealedCount(target.length);
+
       const nextTimer = window.setTimeout(() => {
-        setDisplay(target);
         setPhraseIndex((current) => (current + 1) % phrases.length);
       }, 4200);
 
@@ -33,13 +36,18 @@ export function AnimatedHeroTitle() {
     let reveal = 0;
     let nextTimer: number | undefined;
 
+    setRevealedCount(0);
+
     const scrambleTimer = window.setInterval(() => {
+      const revealed = Math.floor(reveal);
+
+      setRevealedCount(revealed);
       setDisplay(
         target
           .split("")
           .map((character, index) => {
             if (character === " ") return " ";
-            if (index < reveal) return character;
+            if (index < revealed) return character;
             return glyphs[Math.floor(Math.random() * glyphs.length)];
           })
           .join(""),
@@ -50,6 +58,8 @@ export function AnimatedHeroTitle() {
       if (reveal >= target.length + 1) {
         window.clearInterval(scrambleTimer);
         setDisplay(target);
+        setRevealedCount(target.length);
+
         nextTimer = window.setTimeout(() => {
           setPhraseIndex((current) => (current + 1) % phrases.length);
         }, 2700);
@@ -63,9 +73,24 @@ export function AnimatedHeroTitle() {
   }, [phraseIndex, reducedMotion]);
 
   return (
-    <h1 className="hero-title" aria-label="I make things that feel alive.">
-      <span aria-hidden="true">{display}</span>
-      <span className="hero-title__cursor" aria-hidden="true">_</span>
-    </h1>
+    <div className="hero-title-shell">
+      <h1 className="hero-title" aria-label="I make things that feel alive.">
+        <span aria-hidden="true">
+          {display.split("").map((character, index) => (
+            <span
+              className={
+                index < revealedCount
+                  ? "hero-title__settled"
+                  : "hero-title__scramble"
+              }
+              key={`${phraseIndex}-${index}`}
+            >
+              {character}
+            </span>
+          ))}
+        </span>
+        <span className="hero-title__cursor" aria-hidden="true">_</span>
+      </h1>
+    </div>
   );
 }
