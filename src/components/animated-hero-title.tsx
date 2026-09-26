@@ -53,12 +53,6 @@ export function AnimatedHeroTitle() {
     let reveal = 0;
     let nextTimer: number | undefined;
 
-    // Swap the text and its size together. This prevents a long outgoing phrase
-    // from briefly inheriting the much larger English size between transitions.
-    setDisplay(scrambledText(target));
-    setDisplaySize(phrase.size);
-    setRevealedCount(0);
-
     const scrambleTimer = window.setInterval(() => {
       const revealed = Math.floor(reveal);
 
@@ -82,7 +76,15 @@ export function AnimatedHeroTitle() {
         setRevealedCount(target.length);
 
         nextTimer = window.setTimeout(() => {
-          setPhraseIndex((current) => (current + 1) % phrases.length);
+          const nextIndex = (phraseIndex + 1) % phrases.length;
+          const nextPhrase = phrases[nextIndex];
+
+          // The next string and its matching size are switched in the same
+          // timer callback, so long phrases never flash at another language's size.
+          setDisplay(scrambledText(nextPhrase.text));
+          setDisplaySize(nextPhrase.size);
+          setRevealedCount(0);
+          setPhraseIndex(nextIndex);
         }, 2700);
       }
     }, 42);
