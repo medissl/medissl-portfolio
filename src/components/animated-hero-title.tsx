@@ -13,9 +13,17 @@ const phrases = [
 
 type PhraseSize = (typeof phrases)[number]["size"];
 
-const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アイウエオ가나다라마바사中文";
+const glyphSets: Record<PhraseSize, string> = {
+  english: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  long: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  dense: "アイウエオカキクケコサシスセソ0123456789",
+  compact: "가나다라마바사아자차카타파하0123456789",
+  chinese: "中文生命创造感觉东西灵感作品0123456789",
+};
 
-function scrambleLine(line: string) {
+function scrambleLine(line: string, size: PhraseSize) {
+  const glyphs = glyphSets[size];
+
   return line
     .split("")
     .map((character) => {
@@ -25,8 +33,8 @@ function scrambleLine(line: string) {
     .join("");
 }
 
-function scrambledLines(lines: readonly string[]) {
-  return lines.map(scrambleLine);
+function scrambledLines(lines: readonly string[], size: PhraseSize) {
+  return lines.map((line) => scrambleLine(line, size));
 }
 
 export function AnimatedHeroTitle() {
@@ -52,6 +60,7 @@ export function AnimatedHeroTitle() {
   useEffect(() => {
     const phrase = phrases[phraseIndex];
     const targetLines = phrase.lines;
+    const glyphs = glyphSets[phrase.size];
     const targetLength = targetLines.join("\n").length;
 
     if (reducedMotion) {
@@ -103,7 +112,7 @@ export function AnimatedHeroTitle() {
           const nextIndex = (phraseIndex + 1) % phrases.length;
           const nextPhrase = phrases[nextIndex];
 
-          setDisplayLines(scrambledLines(nextPhrase.lines));
+          setDisplayLines(scrambledLines(nextPhrase.lines, nextPhrase.size));
           setDisplaySize(nextPhrase.size);
           setRevealedCount(0);
           setPhraseIndex(nextIndex);

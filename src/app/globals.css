@@ -237,12 +237,16 @@ main { min-height: 70vh; }
   padding-block: 82px;
 }
 
-.hero__copy { max-width: 740px; }
+.hero__copy {
+  min-width: 0;
+  max-width: 740px;
+}
 
 .hero-title-shell {
   width: 100%;
-  max-width: 790px;
-  height: clamp(222px, 20vw, 262px);
+  min-width: 0;
+  max-width: 660px;
+  height: clamp(230px, 20.5vw, 274px);
   overflow: hidden;
   display: flex;
   align-items: flex-end;
@@ -252,6 +256,9 @@ main { min-height: 70vh; }
 .hero-title {
   margin: 0;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   font-size: clamp(3.8rem, 7.2vw, 7.25rem);
   line-height: .94;
   letter-spacing: -.066em;
@@ -289,13 +296,21 @@ main { min-height: 70vh; }
 }
 
 .hero-title__text {
-  display: block;
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex-direction: column;
+  gap: .075em;
 }
 
 .hero-title__line {
   display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: .94em;
-  white-space: pre;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .hero-title__settled {
@@ -391,6 +406,7 @@ main { min-height: 70vh; }
 .button--ghost { background: rgba(255,255,255,.025); }
 
 .hero__visual {
+  min-width: 0;
   height: 540px;
   position: relative;
   top: -32px;
@@ -1515,7 +1531,8 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: clamp(210px, 29vw, 252px);
+    max-width: 660px;
+    height: clamp(220px, 30vw, 266px);
   }
 
             .hero-title--english {
@@ -1608,7 +1625,8 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: 190px;
+    max-width: 100%;
+    height: 198px;
   }
 
             .hero-title {
@@ -1746,7 +1764,7 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: 184px;
+    height: 192px;
   }
 
           }
