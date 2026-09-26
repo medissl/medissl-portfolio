@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const phrases = [
@@ -47,15 +47,6 @@ export function AnimatedHeroTitle() {
   const [revealedCount, setRevealedCount] = useState(
     phrases[0].lines.join("\n").length,
   );
-
-  const lineOffsets = useMemo(() => {
-    let offset = 0;
-    return displayLines.map((line) => {
-      const current = offset;
-      offset += line.length + 1;
-      return current;
-    });
-  }, [displayLines]);
 
   useEffect(() => {
     const phrase = phrases[phraseIndex];
@@ -136,7 +127,11 @@ export function AnimatedHeroTitle() {
           {displayLines.map((line, lineIndex) => (
             <span className="hero-title__line" key={`${phraseIndex}-${lineIndex}`}>
               {line.split("").map((character, characterIndex) => {
-                const globalIndex = lineOffsets[lineIndex] + characterIndex;
+                const globalIndex =
+                  displayLines
+                    .slice(0, lineIndex)
+                    .reduce((sum, currentLine) => sum + currentLine.length + 1, 0) +
+                  characterIndex;
                 const isLast =
                   lineIndex === displayLines.length - 1 &&
                   characterIndex === line.length - 1;

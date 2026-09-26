@@ -48,9 +48,7 @@ function ProjectList() {
   const carouselProjects = useMemo(() => {
     const live = projects.filter((project) => project.published);
     const featured = live.filter((project) => project.featured);
-    return [...(featured.length ? featured : live)]
-      .sort(compareCarouselOrder)
-      .slice(0, 6);
+    return [...(featured.length ? featured : live)].sort(compareCarouselOrder);
   }, [projects]);
 
   const carouselUsesFeatured = projects.some(
@@ -168,6 +166,7 @@ function ProjectList() {
                   <span>
                     {project.category}
                     {project.featured ? " · Featured" : ""}
+                    {index < 6 ? " · In carousel" : " · Queued"}
                   </span>
                 </Link>
 
