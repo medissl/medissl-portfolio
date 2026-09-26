@@ -97,8 +97,22 @@ main { min-height: 70vh; }
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  position: relative;
-  z-index: 20;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  isolation: isolate;
+}
+
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(50% - 50vw);
+  z-index: -1;
+  background: rgba(2, 5, 12, .78);
+  border-bottom: 1px solid rgba(98, 210, 255, .08);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
 }
 
 .site-header--admin {
@@ -195,10 +209,19 @@ main { min-height: 70vh; }
 .hero__copy { max-width: 740px; }
 
 .hero-title-shell {
-  height: 3.05em;
+  height: 3.3em;
   max-width: 790px;
   overflow: hidden;
   font-size: clamp(3.8rem, 7.2vw, 7.25rem);
+  transition: font-size .34s cubic-bezier(.22, 1, .36, 1);
+}
+
+.hero-title-shell--compact {
+  font-size: clamp(3.15rem, 6vw, 6.15rem);
+}
+
+.hero-title-shell--cjk {
+  letter-spacing: -.025em;
 }
 
 .hero-title {
@@ -295,6 +318,7 @@ main { min-height: 70vh; }
 .hero__visual {
   height: 540px;
   position: relative;
+  top: -34px;
   isolation: isolate;
 }
 
@@ -1330,13 +1354,20 @@ main { min-height: 70vh; }
     padding-top: 100px;
   }
 
-  .hero-title-shell { height: 3.25em; }
+  .hero-title-shell {
+    height: 3.65em;
+  }
+
+  .hero-title-shell--compact {
+    font-size: clamp(3rem, 8vw, 5.15rem);
+  }
 
   .hero__visual {
     height: 410px;
     max-width: 620px;
     width: 100%;
     margin: 0 auto;
+    top: -18px;
   }
 
   .featured-carousel__stage,
@@ -1393,15 +1424,22 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: 4.05em;
+    height: 4.35em;
     font-size: clamp(3.2rem, 15vw, 5.2rem);
+  }
+
+  .hero-title-shell--compact {
+    font-size: clamp(2.55rem, 12vw, 4.35rem);
   }
 
   .hero-title {
     font-size: 1em;
   }
 
-  .hero__visual { height: 330px; }
+  .hero__visual {
+    height: 330px;
+    top: -8px;
+  }
 
   .signal-core { width: 126px; height: 126px; }
   .signal-orbit--outer { width: 286px; height: 286px; }

@@ -13,6 +13,12 @@ const phrases = [
 
 const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アイウエオ가나다라마바사中文";
 
+function phraseSizeClass(index: number) {
+  if (index === 1) return "hero-title-shell--compact hero-title-shell--cjk";
+  if (index === 4) return "hero-title-shell--compact";
+  return "";
+}
+
 export function AnimatedHeroTitle() {
   const reducedMotion = useReducedMotion();
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -72,8 +78,10 @@ export function AnimatedHeroTitle() {
     };
   }, [phraseIndex, reducedMotion]);
 
+  const sizingClass = phraseSizeClass(phraseIndex);
+
   return (
-    <div className="hero-title-shell">
+    <div className={`hero-title-shell ${sizingClass}`.trim()}>
       <h1 className="hero-title" aria-label="I make things that feel alive.">
         <span aria-hidden="true">
           {display.split("").map((character, index) => (
