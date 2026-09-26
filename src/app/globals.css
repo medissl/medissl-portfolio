@@ -94,7 +94,7 @@ main { min-height: 70vh; }
   top: 0;
   z-index: 80;
   width: 100%;
-  height: 88px;
+  height: 76px;
   margin: 0;
   border-bottom: 1px solid rgba(115, 225, 255, .15);
   background:
@@ -157,14 +157,15 @@ main { min-height: 70vh; }
 }
 
 .brand__name {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
   line-height: 1;
-  letter-spacing: .16em;
-  font-weight: 900;
-  color: var(--cyan);
-  text-shadow:
-    0 0 9px rgba(113, 242, 255, .5),
-    0 0 24px rgba(73, 195, 255, .22);
+  letter-spacing: .095em;
+  font-weight: 800;
+  color: #8eeeff;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 0 18px rgba(85, 217, 255, .24);
 }
 
 .nav {
@@ -175,12 +176,12 @@ main { min-height: 70vh; }
 
 .nav__link,
 .nav__back {
-  min-height: 40px;
+  min-height: 36px;
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0 13px;
+  padding: 0 11px;
   border: 1px solid transparent;
   border-radius: 999px;
   color: #a8bfd0;
@@ -366,46 +367,6 @@ main { min-height: 70vh; }
   isolation: isolate;
 }
 
-.signal-readout {
-  position: absolute;
-  top: 7%;
-  right: 1%;
-  z-index: 4;
-  min-width: 178px;
-  padding: 12px 14px;
-  display: grid;
-  grid-template-columns: 8px 1fr;
-  gap: 4px 9px;
-  border-top: 1px solid rgba(112, 228, 255, .26);
-  border-bottom: 1px solid rgba(112, 228, 255, .12);
-  background: linear-gradient(90deg, rgba(12, 31, 51, .48), rgba(5, 13, 25, .08));
-  backdrop-filter: blur(10px);
-}
-
-.signal-readout__pulse {
-  width: 6px;
-  height: 6px;
-  margin-top: 4px;
-  border-radius: 999px;
-  background: var(--cyan);
-  box-shadow: 0 0 12px rgba(114, 246, 255, .85);
-  animation: dot-blink 1.5s ease-in-out infinite;
-}
-
-.signal-readout > span:not(.signal-readout__pulse) {
-  color: #d7f7ff;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 10px;
-  letter-spacing: .12em;
-}
-
-.signal-readout strong {
-  grid-column: 2;
-  color: #7fa6bb;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .11em;
-}
 
 .signal-core {
   position: absolute;
@@ -518,6 +479,13 @@ main { min-height: 70vh; }
   animation: float-b 5.8s ease-in-out infinite;
 }
 
+.signal-card--c {
+  right: 2%;
+  top: 7%;
+  transform: rotate(3deg);
+  animation: float-c 5.5s ease-in-out infinite;
+}
+
 .signal-line {
   position: absolute;
   height: 1px;
@@ -549,7 +517,6 @@ main { min-height: 70vh; }
   animation: dot-blink 1.8s ease-in-out infinite;
 }
 
-.signal-dot--one { top: 17%; right: 30%; }
 .signal-dot--two { bottom: 22%; left: 21%; animation-delay: .7s; }
 .signal-dot--three { top: 44%; left: 4%; animation-delay: 1.25s; }
 
@@ -1402,6 +1369,11 @@ main { min-height: 70vh; }
   50% { transform: translateY(13px) rotate(2deg); }
 }
 
+@keyframes float-c {
+  0%,100% { transform: translateY(0) rotate(3deg); }
+  50% { transform: translateY(-11px) rotate(6deg); }
+}
+
 @keyframes line-scan {
   from { background-position: 200% 0; }
   to { background-position: -20% 0; }
@@ -1498,7 +1470,7 @@ main { min-height: 70vh; }
     width: min(calc(100% - 28px), var(--max));
   }
 
-  .site-header { height: 72px; }
+  .site-header { height: 64px; }
 
   .site-header__inner {
     width: min(calc(100% - 28px), var(--max));
@@ -1539,11 +1511,6 @@ main { min-height: 70vh; }
     top: -18px;
   }
 
-  .signal-readout {
-    top: 0;
-    right: 0;
-    min-width: 150px;
-  }
 
   .signal-core { width: 126px; height: 126px; }
   .signal-orbit--outer { width: 286px; height: 286px; }
@@ -1556,6 +1523,11 @@ main { min-height: 70vh; }
   }
 
   .signal-card strong { font-size: 23px; }
+
+  .signal-card--c {
+    top: 2%;
+    right: 1%;
+  }
 
   .section,
   .page { padding-block: 72px; }

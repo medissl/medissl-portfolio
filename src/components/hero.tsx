@@ -40,12 +40,6 @@ export function Hero() {
         animate={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
         transition={{ duration: 1, delay: 0.12 }}
       >
-        <div className="signal-readout">
-          <span className="signal-readout__pulse" />
-          <span>MEDISSL / LIVE</span>
-          <strong>ART · UI · CODE</strong>
-        </div>
-
         <div className="signal-orbit signal-orbit--outer" />
         <div className="signal-orbit signal-orbit--inner" />
         <div className="signal-pulse signal-pulse--one" />
@@ -57,6 +51,9 @@ export function Hero() {
         <div className="signal-card signal-card--b">
           <span>UI/UX</span><strong>02</strong>
         </div>
+        <div className="signal-card signal-card--c">
+          <span>CODE</span><strong>03</strong>
+        </div>
 
         <div className="signal-core">
           <div className="signal-core__ring" />
@@ -65,7 +62,6 @@ export function Hero() {
 
         <div className="signal-line signal-line--one" />
         <div className="signal-line signal-line--two" />
-        <div className="signal-dot signal-dot--one" />
         <div className="signal-dot signal-dot--two" />
         <div className="signal-dot signal-dot--three" />
       </motion.div>
