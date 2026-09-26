@@ -246,7 +246,7 @@ main { min-height: 70vh; }
   width: 100%;
   min-width: 0;
   max-width: 660px;
-  height: clamp(230px, 20.5vw, 274px);
+  height: clamp(238px, 21vw, 286px);
   overflow: hidden;
   display: flex;
   align-items: flex-end;
@@ -260,7 +260,7 @@ main { min-height: 70vh; }
   max-width: 100%;
   overflow: hidden;
   font-size: clamp(3.8rem, 7.2vw, 7.25rem);
-  line-height: .94;
+  line-height: 1.02;
   letter-spacing: -.066em;
   font-weight: 720;
   color: #f8fdff;
@@ -296,11 +296,10 @@ main { min-height: 70vh; }
 }
 
 .hero-title__text {
-  display: flex;
+  display: block;
   min-width: 0;
   max-width: 100%;
-  flex-direction: column;
-  gap: .075em;
+  padding-block: .035em;
 }
 
 .hero-title__line {
@@ -308,8 +307,6 @@ main { min-height: 70vh; }
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  min-height: .94em;
-  overflow: hidden;
   white-space: nowrap;
 }
 
@@ -1532,7 +1529,7 @@ main { min-height: 70vh; }
 
   .hero-title-shell {
     max-width: 660px;
-    height: clamp(220px, 30vw, 266px);
+    height: clamp(228px, 31vw, 278px);
   }
 
             .hero-title--english {
@@ -1626,7 +1623,7 @@ main { min-height: 70vh; }
 
   .hero-title-shell {
     max-width: 100%;
-    height: 198px;
+    height: 206px;
   }
 
             .hero-title {
@@ -1764,7 +1761,7 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: 192px;
+    height: 200px;
   }
 
           }
