@@ -17,19 +17,22 @@ export function Hero() {
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
         <AnimatedHeroTitle />
-        <p className="hero__lede">
-          I&apos;m Medianto Susilo. I build visual experiences across art,
-          UI/UX, games, web, and the random ideas that feel interesting enough
-          to become real.
-        </p>
 
-        <div className="hero__actions">
-          <Link href="/work" className="button button--primary">
-            Explore work <ArrowDownRight size={18} />
-          </Link>
-          <Link href="/about" className="button button--ghost">
-            About me
-          </Link>
+        <div className="hero__intro">
+          <p className="hero__lede">
+            I&apos;m Medianto Susilo. I build visual experiences across art,
+            UI/UX, games, web, and the random ideas that feel interesting enough
+            to become real.
+          </p>
+
+          <div className="hero__actions">
+            <Link href="/work" className="button button--primary">
+              Explore work <ArrowDownRight size={18} />
+            </Link>
+            <Link href="/about" className="button button--ghost">
+              About me
+            </Link>
+          </div>
         </div>
       </motion.div>
 

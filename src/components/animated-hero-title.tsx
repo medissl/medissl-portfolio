@@ -1,49 +1,67 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const phrases = [
-  { text: "I make things\nthat feel\nalive.", size: "english" },
-  { text: "生きているように\n感じるものを\nつくる。", size: "dense" },
-  { text: "살아 있는 듯한\n것을\n만듭니다.", size: "compact" },
-  { text: "我创造\n有生命感的\n东西。", size: "chinese" },
-  { text: "Aku membuat\nhal-hal yang terasa\nhidup.", size: "long" },
+  { lines: ["I make things", "that feel", "alive."], size: "english" },
+  { lines: ["生きているように", "感じるものを", "つくる。"], size: "dense" },
+  { lines: ["살아 있는 듯한", "것을", "만듭니다."], size: "compact" },
+  { lines: ["我创造", "有生命感的", "东西。"], size: "chinese" },
+  { lines: ["Aku membuat", "hal-hal yang terasa", "hidup."], size: "long" },
 ] as const;
 
 type PhraseSize = (typeof phrases)[number]["size"];
 
 const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アイウエオ가나다라마바사中文";
 
-function scrambledText(target: string) {
-  return target
+function scrambleLine(line: string) {
+  return line
     .split("")
     .map((character) => {
-      if (character === " " || character === "\n") return character;
+      if (character === " ") return character;
       return glyphs[Math.floor(Math.random() * glyphs.length)];
     })
     .join("");
 }
 
+function scrambledLines(lines: readonly string[]) {
+  return lines.map(scrambleLine);
+}
+
 export function AnimatedHeroTitle() {
   const reducedMotion = useReducedMotion();
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [display, setDisplay] = useState<string>(phrases[0].text);
+  const [displayLines, setDisplayLines] = useState<string[]>([
+    ...phrases[0].lines,
+  ]);
   const [displaySize, setDisplaySize] = useState<PhraseSize>(phrases[0].size);
-  const [revealedCount, setRevealedCount] = useState(phrases[0].text.length);
+  const [revealedCount, setRevealedCount] = useState(
+    phrases[0].lines.join("\n").length,
+  );
+
+  const lineOffsets = useMemo(() => {
+    let offset = 0;
+    return displayLines.map((line) => {
+      const current = offset;
+      offset += line.length + 1;
+      return current;
+    });
+  }, [displayLines]);
 
   useEffect(() => {
     const phrase = phrases[phraseIndex];
-    const target = phrase.text;
+    const targetLines = phrase.lines;
+    const targetLength = targetLines.join("\n").length;
 
     if (reducedMotion) {
       const nextTimer = window.setTimeout(() => {
         const nextIndex = (phraseIndex + 1) % phrases.length;
         const nextPhrase = phrases[nextIndex];
 
-        setDisplay(nextPhrase.text);
+        setDisplayLines([...nextPhrase.lines]);
         setDisplaySize(nextPhrase.size);
-        setRevealedCount(nextPhrase.text.length);
+        setRevealedCount(nextPhrase.lines.join("\n").length);
         setPhraseIndex(nextIndex);
       }, 4200);
 
@@ -55,33 +73,37 @@ export function AnimatedHeroTitle() {
 
     const scrambleTimer = window.setInterval(() => {
       const revealed = Math.floor(reveal);
+      let offset = 0;
 
       setRevealedCount(revealed);
-      setDisplay(
-        target
-          .split("")
-          .map((character, index) => {
-            if (character === " " || character === "\n") return character;
-            if (index < revealed) return character;
-            return glyphs[Math.floor(Math.random() * glyphs.length)];
-          })
-          .join(""),
+      setDisplayLines(
+        targetLines.map((line) => {
+          const start = offset;
+          offset += line.length + 1;
+
+          return line
+            .split("")
+            .map((character, index) => {
+              if (character === " ") return character;
+              if (start + index < revealed) return character;
+              return glyphs[Math.floor(Math.random() * glyphs.length)];
+            })
+            .join("");
+        }),
       );
 
       reveal += 0.72;
 
-      if (reveal >= target.length + 1) {
+      if (reveal >= targetLength + 1) {
         window.clearInterval(scrambleTimer);
-        setDisplay(target);
-        setRevealedCount(target.length);
+        setDisplayLines([...targetLines]);
+        setRevealedCount(targetLength);
 
         nextTimer = window.setTimeout(() => {
           const nextIndex = (phraseIndex + 1) % phrases.length;
           const nextPhrase = phrases[nextIndex];
 
-          // The next string and its matching size are switched in the same
-          // timer callback, so long phrases never flash at another language's size.
-          setDisplay(scrambledText(nextPhrase.text));
+          setDisplayLines(scrambledLines(nextPhrase.lines));
           setDisplaySize(nextPhrase.size);
           setRevealedCount(0);
           setPhraseIndex(nextIndex);
@@ -102,22 +124,29 @@ export function AnimatedHeroTitle() {
         aria-label="I make things that feel alive."
       >
         <span className="hero-title__text" aria-hidden="true">
-          {display.split("").map((character, index) => {
-            const isLast = index === display.length - 1;
+          {displayLines.map((line, lineIndex) => (
+            <span className="hero-title__line" key={`${phraseIndex}-${lineIndex}`}>
+              {line.split("").map((character, characterIndex) => {
+                const globalIndex = lineOffsets[lineIndex] + characterIndex;
+                const isLast =
+                  lineIndex === displayLines.length - 1 &&
+                  characterIndex === line.length - 1;
 
-            return (
-              <span
-                className={`${
-                  index < revealedCount
-                    ? "hero-title__settled"
-                    : "hero-title__scramble"
-                }${isLast ? " hero-title__tail" : ""}`}
-                key={`${phraseIndex}-${index}`}
-              >
-                {character}
-              </span>
-            );
-          })}
+                return (
+                  <span
+                    className={`${
+                      globalIndex < revealedCount
+                        ? "hero-title__settled"
+                        : "hero-title__scramble"
+                    }${isLast ? " hero-title__tail" : ""}`}
+                    key={`${phraseIndex}-${lineIndex}-${characterIndex}`}
+                  >
+                    {character}
+                  </span>
+                );
+              })}
+            </span>
+          ))}
         </span>
       </h1>
     </div>
