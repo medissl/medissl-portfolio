@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const phrases = [
-  { text: "I make things that feel alive.", size: "english" },
-  { text: "生きているように感じるものをつくる。", size: "dense" },
-  { text: "살아 있는 듯한 것을 만듭니다.", size: "compact" },
-  { text: "我创造有生命感的东西。", size: "chinese" },
-  { text: "Aku membuat hal-hal yang terasa hidup.", size: "long" },
+  { text: "I make things\nthat feel\nalive.", size: "english" },
+  { text: "生きているように\n感じるものを\nつくる。", size: "dense" },
+  { text: "살아 있는 듯한\n것을\n만듭니다.", size: "compact" },
+  { text: "我创造\n有生命感的\n东西。", size: "chinese" },
+  { text: "Aku membuat\nhal-hal yang terasa\nhidup.", size: "long" },
 ] as const;
 
 type PhraseSize = (typeof phrases)[number]["size"];
@@ -19,7 +19,7 @@ function scrambledText(target: string) {
   return target
     .split("")
     .map((character) => {
-      if (character === " ") return " ";
+      if (character === " " || character === "\n") return character;
       return glyphs[Math.floor(Math.random() * glyphs.length)];
     })
     .join("");
@@ -61,7 +61,7 @@ export function AnimatedHeroTitle() {
         target
           .split("")
           .map((character, index) => {
-            if (character === " ") return " ";
+            if (character === " " || character === "\n") return character;
             if (index < revealed) return character;
             return glyphs[Math.floor(Math.random() * glyphs.length)];
           })

@@ -242,31 +242,11 @@ main { min-height: 70vh; }
 .hero-title-shell {
   width: 100%;
   max-width: 790px;
-  height: clamp(248px, 23vw, 326px);
+  height: clamp(222px, 20vw, 262px);
   overflow: hidden;
   display: flex;
   align-items: flex-start;
   contain: layout paint;
-}
-
-.hero-title-shell--english {
-  height: clamp(192px, 16.5vw, 218px);
-}
-
-.hero-title-shell--compact {
-  height: clamp(178px, 15.2vw, 204px);
-}
-
-.hero-title-shell--chinese {
-  height: clamp(188px, 16vw, 214px);
-}
-
-.hero-title-shell--dense {
-  height: clamp(198px, 17vw, 244px);
-}
-
-.hero-title-shell--long {
-  height: clamp(218px, 19vw, 270px);
 }
 
 .hero-title {
@@ -282,34 +262,35 @@ main { min-height: 70vh; }
 }
 
 .hero-title--english {
-  font-size: clamp(3.45rem, 6.35vw, 6.45rem);
+  font-size: clamp(3.25rem, 5.55vw, 5.55rem);
   overflow-wrap: normal;
   word-break: keep-all;
 }
 
 .hero-title--compact {
-  font-size: clamp(2.95rem, 5.55vw, 5.6rem);
+  font-size: clamp(2.9rem, 5.05vw, 5.05rem);
   overflow-wrap: normal;
   word-break: keep-all;
 }
 
 .hero-title--chinese {
-  font-size: clamp(3.05rem, 5.7vw, 5.75rem);
+  font-size: clamp(3.05rem, 5.25vw, 5.25rem);
   letter-spacing: -.045em;
 }
 
 .hero-title--dense {
-  font-size: clamp(2.95rem, 5.45vw, 5.55rem);
+  font-size: clamp(2.8rem, 4.85vw, 4.9rem);
   letter-spacing: -.04em;
 }
 
 .hero-title--long {
-  font-size: clamp(2.95rem, 5.5vw, 5.6rem);
+  font-size: clamp(2.75rem, 4.75vw, 4.8rem);
   letter-spacing: -.052em;
 }
 
 .hero-title__text {
   display: inline;
+  white-space: pre-line;
 }
 
 .hero-title__settled {
@@ -1525,44 +1506,27 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: clamp(250px, 38vw, 330px);
+    height: clamp(210px, 29vw, 252px);
   }
 
-  .hero-title-shell--english {
-    height: clamp(192px, 27vw, 226px);
-  }
-
-  .hero-title-shell--compact {
-    height: clamp(180px, 25vw, 212px);
-  }
-
-  .hero-title-shell--chinese {
-    height: clamp(188px, 26vw, 220px);
-  }
-
-  .hero-title-shell--dense {
-    height: clamp(205px, 29vw, 260px);
-  }
-
-  .hero-title-shell--long {
-    height: clamp(225px, 33vw, 285px);
-  }
-
-  .hero-title--english {
-    font-size: clamp(3.05rem, 7.6vw, 4.9rem);
+            .hero-title--english {
+    font-size: clamp(3rem, 7.25vw, 4.65rem);
   }
 
   .hero-title--compact {
-    font-size: clamp(2.72rem, 7.25vw, 4.6rem);
+    font-size: clamp(2.7rem, 6.75vw, 4.25rem);
   }
 
   .hero-title--chinese {
-    font-size: clamp(2.8rem, 7.4vw, 4.7rem);
+    font-size: clamp(2.8rem, 7vw, 4.4rem);
   }
 
-  .hero-title--dense,
+  .hero-title--dense {
+    font-size: clamp(2.6rem, 6.45vw, 4.05rem);
+  }
+
   .hero-title--long {
-    font-size: clamp(2.7rem, 7.2vw, 4.65rem);
+    font-size: clamp(2.55rem, 6.25vw, 3.95rem);
   }
 
   .hero__visual {
@@ -1631,48 +1595,31 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: 300px;
+    height: 190px;
   }
 
-  .hero-title-shell--english {
-    height: 188px;
-  }
-
-  .hero-title-shell--compact {
-    height: 176px;
-  }
-
-  .hero-title-shell--chinese {
-    height: 184px;
-  }
-
-  .hero-title-shell--dense {
-    height: 232px;
-  }
-
-  .hero-title-shell--long {
-    height: 258px;
-  }
-
-  .hero-title {
-    font-size: clamp(3.15rem, 14vw, 5rem);
+            .hero-title {
+    font-size: clamp(2.8rem, 12vw, 4.4rem);
   }
 
   .hero-title--english {
-    font-size: clamp(2.75rem, 12.4vw, 4.35rem);
+    font-size: clamp(2.65rem, 11.5vw, 4rem);
   }
 
   .hero-title--compact {
-    font-size: clamp(2.35rem, 10.9vw, 3.8rem);
+    font-size: clamp(2.35rem, 10.2vw, 3.6rem);
   }
 
   .hero-title--chinese {
-    font-size: clamp(2.45rem, 11.2vw, 3.9rem);
+    font-size: clamp(2.45rem, 10.7vw, 3.75rem);
   }
 
-  .hero-title--dense,
+  .hero-title--dense {
+    font-size: clamp(2.25rem, 9.7vw, 3.45rem);
+  }
+
   .hero-title--long {
-    font-size: clamp(2.3rem, 10.5vw, 3.75rem);
+    font-size: clamp(2.2rem, 9.35vw, 3.3rem);
   }
 
   .hero__visual {
@@ -1782,26 +1729,7 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell {
-    height: 285px;
+    height: 184px;
   }
 
-  .hero-title-shell--english {
-    height: 182px;
-  }
-
-  .hero-title-shell--compact {
-    height: 170px;
-  }
-
-  .hero-title-shell--chinese {
-    height: 178px;
-  }
-
-  .hero-title-shell--dense {
-    height: 224px;
-  }
-
-  .hero-title-shell--long {
-    height: 250px;
-  }
-}
+          }
