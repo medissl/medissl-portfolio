@@ -279,15 +279,18 @@ main { min-height: 70vh; }
   color: #f8fdff;
   text-shadow: 0 0 34px rgba(76, 209, 255, .08);
   overflow-wrap: anywhere;
-  text-wrap: balance;
 }
 
 .hero-title--english {
   font-size: clamp(3.45rem, 6.35vw, 6.45rem);
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 .hero-title--compact {
   font-size: clamp(2.95rem, 5.55vw, 5.6rem);
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 .hero-title--chinese {
@@ -321,18 +324,21 @@ main { min-height: 70vh; }
 }
 
 .hero-title__tail {
-  display: inline-block;
-  white-space: nowrap;
+  position: relative;
 }
 
-.hero-title__cursor {
-  display: inline-block;
-  margin-left: .04em;
-  vertical-align: .04em;
-  line-height: 1;
-  color: var(--cyan);
-  text-shadow: 0 0 14px rgba(104, 237, 255, .72);
+.hero-title__tail::after {
+  content: "";
+  position: absolute;
+  left: calc(100% + .05em);
+  bottom: .06em;
+  width: .5em;
+  height: .075em;
+  border-radius: 999px;
+  background: var(--cyan);
+  box-shadow: 0 0 14px rgba(104, 237, 255, .72);
   animation: cursor-blink .8s steps(1) infinite;
+  pointer-events: none;
 }
 
 .hero__lede,

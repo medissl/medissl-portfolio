@@ -115,9 +115,6 @@ export function AnimatedHeroTitle() {
                 key={`${phraseIndex}-${index}`}
               >
                 {character}
-                {isLast && (
-                  <span className="hero-title__cursor" aria-hidden="true">_</span>
-                )}
               </span>
             );
           })}
