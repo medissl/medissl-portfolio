@@ -250,11 +250,11 @@ main { min-height: 70vh; }
 }
 
 .hero-title-shell--english {
-  height: clamp(226px, 20vw, 292px);
+  height: clamp(192px, 16.5vw, 218px);
 }
 
 .hero-title-shell--compact {
-  height: clamp(210px, 18vw, 254px);
+  height: clamp(178px, 15.2vw, 204px);
 }
 
 .hero-title-shell--dense {
@@ -1517,11 +1517,11 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell--english {
-    height: clamp(232px, 34vw, 292px);
+    height: clamp(192px, 27vw, 226px);
   }
 
   .hero-title-shell--compact {
-    height: clamp(214px, 30vw, 268px);
+    height: clamp(180px, 25vw, 212px);
   }
 
   .hero-title-shell--dense {
@@ -1615,11 +1615,11 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell--english {
-    height: 260px;
+    height: 188px;
   }
 
   .hero-title-shell--compact {
-    height: 242px;
+    height: 176px;
   }
 
   .hero-title-shell--dense {
@@ -1758,11 +1758,11 @@ main { min-height: 70vh; }
   }
 
   .hero-title-shell--english {
-    height: 250px;
+    height: 182px;
   }
 
   .hero-title-shell--compact {
-    height: 232px;
+    height: 170px;
   }
 
   .hero-title-shell--dense {
