@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Github, Mail, MessageCircle, Phone } from "lucide-react";
+import { Code2, Mail, MessageCircle, Phone } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
 export function AnimatedStatement() {
@@ -52,7 +52,7 @@ export function AnimatedStatement() {
             <MessageCircle size={17} /> WhatsApp
           </Link>
           <Link href="https://github.com/medissl" target="_blank" rel="noreferrer">
-            <Github size={17} /> GitHub
+            <Code2 size={17} /> GitHub
           </Link>
         </div>
       </motion.section>
