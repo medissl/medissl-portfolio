@@ -1,4 +1,4 @@
-# Medianto Susilo — Creative Portfolio
+# Medissl — Creative Portfolio
 
 A live creative portfolio and lightweight CMS for my art, UI/UX, interactive media, games, web work, and the random ideas that feel interesting enough to become real.
 
