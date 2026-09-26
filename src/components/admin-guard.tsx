@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { LogIn, LogOut, ShieldCheck } from "lucide-react";
 import { getBrowserSupabase } from "@/lib/supabase";
 
@@ -14,8 +14,9 @@ export function AdminGuard({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState("");
   const [identity, setIdentity] = useState<string | null>(null);
 
-  async function checkAccess() {
+  const checkAccess = useCallback(async () => {
     setState("checking");
+
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData.session?.user;
 
@@ -26,6 +27,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     }
 
     setIdentity(user.email ?? "Authenticated user");
+
     const { data, error } = await supabase
       .from("admin_users")
       .select("user_id")
@@ -33,25 +35,34 @@ export function AdminGuard({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     setState(!error && data ? "allowed" : "denied");
-  }
+  }, [supabase]);
 
   useEffect(() => {
-    void checkAccess();
+    const initialCheck = window.setTimeout(() => {
+      void checkAccess();
+    }, 0);
+
     const { data } = supabase.auth.onAuthStateChange(() => {
       void checkAccess();
     });
-    return () => data.subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    return () => {
+      window.clearTimeout(initialCheck);
+      data.subscription.unsubscribe();
+    };
+  }, [checkAccess, supabase]);
 
   async function login(event: FormEvent) {
     event.preventDefault();
     setMessage("Signing in…");
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+
     if (error) {
       setMessage(error.message);
       return;
     }
+
     setMessage("");
     await checkAccess();
   }
