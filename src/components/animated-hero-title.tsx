@@ -7,7 +7,7 @@ const phrases = [
   { text: "I make things that feel alive.", size: "english" },
   { text: "生きているように感じるものをつくる。", size: "dense" },
   { text: "살아 있는 듯한 것을 만듭니다.", size: "compact" },
-  { text: "我创造有生命感的东西。", size: "default" },
+  { text: "我创造有生命感的东西。", size: "chinese" },
   { text: "Aku membuat hal-hal yang terasa hidup.", size: "long" },
 ] as const;
 

@@ -246,7 +246,7 @@ main { min-height: 70vh; }
   overflow: hidden;
   display: flex;
   align-items: flex-start;
-  transition: height .34s cubic-bezier(.22, 1, .36, 1);
+  contain: layout paint;
 }
 
 .hero-title-shell--english {
@@ -255,6 +255,10 @@ main { min-height: 70vh; }
 
 .hero-title-shell--compact {
   height: clamp(178px, 15.2vw, 204px);
+}
+
+.hero-title-shell--chinese {
+  height: clamp(188px, 16vw, 214px);
 }
 
 .hero-title-shell--dense {
@@ -276,9 +280,6 @@ main { min-height: 70vh; }
   text-shadow: 0 0 34px rgba(76, 209, 255, .08);
   overflow-wrap: anywhere;
   text-wrap: balance;
-  transition:
-    font-size .34s cubic-bezier(.22, 1, .36, 1),
-    letter-spacing .34s ease;
 }
 
 .hero-title--english {
@@ -287,6 +288,11 @@ main { min-height: 70vh; }
 
 .hero-title--compact {
   font-size: clamp(2.95rem, 5.55vw, 5.6rem);
+}
+
+.hero-title--chinese {
+  font-size: clamp(3.05rem, 5.7vw, 5.75rem);
+  letter-spacing: -.045em;
 }
 
 .hero-title--dense {
@@ -1524,6 +1530,10 @@ main { min-height: 70vh; }
     height: clamp(180px, 25vw, 212px);
   }
 
+  .hero-title-shell--chinese {
+    height: clamp(188px, 26vw, 220px);
+  }
+
   .hero-title-shell--dense {
     height: clamp(205px, 29vw, 260px);
   }
@@ -1538,6 +1548,10 @@ main { min-height: 70vh; }
 
   .hero-title--compact {
     font-size: clamp(2.72rem, 7.25vw, 4.6rem);
+  }
+
+  .hero-title--chinese {
+    font-size: clamp(2.8rem, 7.4vw, 4.7rem);
   }
 
   .hero-title--dense,
@@ -1622,6 +1636,10 @@ main { min-height: 70vh; }
     height: 176px;
   }
 
+  .hero-title-shell--chinese {
+    height: 184px;
+  }
+
   .hero-title-shell--dense {
     height: 232px;
   }
@@ -1640,6 +1658,10 @@ main { min-height: 70vh; }
 
   .hero-title--compact {
     font-size: clamp(2.35rem, 10.9vw, 3.8rem);
+  }
+
+  .hero-title--chinese {
+    font-size: clamp(2.45rem, 11.2vw, 3.9rem);
   }
 
   .hero-title--dense,
@@ -1763,6 +1785,10 @@ main { min-height: 70vh; }
 
   .hero-title-shell--compact {
     height: 170px;
+  }
+
+  .hero-title-shell--chinese {
+    height: 178px;
   }
 
   .hero-title-shell--dense {
