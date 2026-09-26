@@ -4,34 +4,28 @@ import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const phrases = [
-  "I make things that feel alive.",
-  "生きているように感じるものをつくる。",
-  "살아 있는 듯한 것을 만듭니다.",
-  "我创造有生命感的东西。",
-  "Aku membuat hal-hal yang terasa hidup.",
-];
+  { text: "I make things that feel alive.", size: "default" },
+  { text: "生きているように感じるものをつくる。", size: "dense" },
+  { text: "살아 있는 듯한 것을 만듭니다.", size: "compact" },
+  { text: "我创造有生命感的东西。", size: "default" },
+  { text: "Aku membuat hal-hal yang terasa hidup.", size: "long" },
+] as const;
 
 const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アイウエオ가나다라마바사中文";
-
-function phraseSizeClass(index: number) {
-  if (index === 1) return "hero-title-shell--compact hero-title-shell--cjk";
-  if (index === 4) return "hero-title-shell--compact";
-  return "";
-}
 
 export function AnimatedHeroTitle() {
   const reducedMotion = useReducedMotion();
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [display, setDisplay] = useState(phrases[0]);
-  const [revealedCount, setRevealedCount] = useState(phrases[0].length);
+  const [display, setDisplay] = useState(phrases[0].text);
+  const [revealedCount, setRevealedCount] = useState(phrases[0].text.length);
 
   useEffect(() => {
-    const target = phrases[phraseIndex];
+    const target = phrases[phraseIndex].text;
 
     if (reducedMotion) {
       const nextTimer = window.setTimeout(() => {
         const nextIndex = (phraseIndex + 1) % phrases.length;
-        const nextPhrase = phrases[nextIndex];
+        const nextPhrase = phrases[nextIndex].text;
 
         setPhraseIndex(nextIndex);
         setDisplay(nextPhrase);
@@ -78,12 +72,15 @@ export function AnimatedHeroTitle() {
     };
   }, [phraseIndex, reducedMotion]);
 
-  const sizingClass = phraseSizeClass(phraseIndex);
+  const size = phrases[phraseIndex].size;
 
   return (
-    <div className={`hero-title-shell ${sizingClass}`.trim()}>
-      <h1 className="hero-title" aria-label="I make things that feel alive.">
-        <span aria-hidden="true">
+    <div className="hero-title-shell">
+      <h1
+        className={`hero-title hero-title--${size}`}
+        aria-label="I make things that feel alive."
+      >
+        <span className="hero-title__text" aria-hidden="true">
           {display.split("").map((character, index) => (
             <span
               className={

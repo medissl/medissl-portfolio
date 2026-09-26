@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
 const publicLinks = [
   { href: "/work", label: "Work" },
@@ -33,33 +33,43 @@ export function SiteHeader() {
 
   return (
     <header className={isAdmin ? "site-header site-header--admin" : "site-header"}>
-      <Link
-        href={isAdmin ? "/admin" : "/"}
-        className="brand"
-        aria-label={isAdmin ? "Admin home" : "Medi home"}
-      >
-        <BrandMark />
-        {!isAdmin && <span className="brand__name">MEDISSL</span>}
-      </Link>
+      <div className="site-header__inner">
+        <Link
+          href={isAdmin ? "/admin" : "/"}
+          className="brand"
+          aria-label={isAdmin ? "Admin home" : "Medi home"}
+        >
+          <BrandMark />
+          {!isAdmin && <span className="brand__name">MEDISSL</span>}
+        </Link>
 
-      <nav className="nav" aria-label="Primary navigation">
-        {isAdmin ? (
-          <Link href="/" className="nav__back">
-            <ArrowLeft size={15} /> Back to portfolio
-          </Link>
-        ) : (
-          publicLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              target={link.external ? "_blank" : undefined}
-              rel={link.external ? "noreferrer" : undefined}
-            >
-              {link.label}
+        <nav className="nav" aria-label="Primary navigation">
+          {isAdmin ? (
+            <Link href="/" className="nav__back">
+              <ArrowLeft size={15} /> Back to portfolio
             </Link>
-          ))
-        )}
-      </nav>
+          ) : (
+            publicLinks.map((link) => {
+              const active =
+                !link.external &&
+                (pathname === link.href || pathname.startsWith(`${link.href}/`));
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={active ? "nav__link is-active" : "nav__link"}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noreferrer" : undefined}
+                >
+                  {link.label}
+                  {link.external && <ArrowUpRight size={13} aria-hidden="true" />}
+                </Link>
+              );
+            })
+          )}
+        </nav>
+      </div>
     </header>
   );
 }

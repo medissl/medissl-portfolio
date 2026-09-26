@@ -40,6 +40,12 @@ export function Hero() {
         animate={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
         transition={{ duration: 1, delay: 0.12 }}
       >
+        <div className="signal-readout">
+          <span className="signal-readout__pulse" />
+          <span>MEDISSL / LIVE</span>
+          <strong>ART · UI · CODE</strong>
+        </div>
+
         <div className="signal-orbit signal-orbit--outer" />
         <div className="signal-orbit signal-orbit--inner" />
         <div className="signal-pulse signal-pulse--one" />
