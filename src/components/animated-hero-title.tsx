@@ -16,7 +16,7 @@ const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アイウエオ가나다라�
 export function AnimatedHeroTitle() {
   const reducedMotion = useReducedMotion();
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [display, setDisplay] = useState(phrases[0].text);
+  const [display, setDisplay] = useState<string>(phrases[0].text);
   const [revealedCount, setRevealedCount] = useState(phrases[0].text.length);
 
   useEffect(() => {
