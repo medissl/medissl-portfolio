@@ -23,11 +23,13 @@ export function AnimatedHeroTitle() {
     const target = phrases[phraseIndex];
 
     if (reducedMotion) {
-      setDisplay(target);
-      setRevealedCount(target.length);
-
       const nextTimer = window.setTimeout(() => {
-        setPhraseIndex((current) => (current + 1) % phrases.length);
+        const nextIndex = (phraseIndex + 1) % phrases.length;
+        const nextPhrase = phrases[nextIndex];
+
+        setPhraseIndex(nextIndex);
+        setDisplay(nextPhrase);
+        setRevealedCount(nextPhrase.length);
       }, 4200);
 
       return () => window.clearTimeout(nextTimer);
@@ -35,8 +37,6 @@ export function AnimatedHeroTitle() {
 
     let reveal = 0;
     let nextTimer: number | undefined;
-
-    setRevealedCount(0);
 
     const scrambleTimer = window.setInterval(() => {
       const revealed = Math.floor(reveal);
