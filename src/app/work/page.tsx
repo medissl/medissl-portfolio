@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { WorkGrid } from "@/components/work-grid";
 import { getPublishedProjects } from "@/lib/projects";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Work",
   description: "Art, UI/UX, interactive media, and experiments by Medianto Susilo.",

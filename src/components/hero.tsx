@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDownRight, Sparkles } from "lucide-react";
+import { ArrowDownRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { AnimatedHeroTitle } from "@/components/animated-hero-title";
 
 export function Hero() {
   const reducedMotion = useReducedMotion();
@@ -15,18 +16,13 @@ export function Hero() {
         animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        <p className="eyebrow hero__eyebrow">
-          <Sparkles size={14} /> Interactive Multimedia · Computer Science
-        </p>
-        <h1>
-          I make things that
-          <span className="text-glow"> feel alive.</span>
-        </h1>
+        <AnimatedHeroTitle />
         <p className="hero__lede">
           I&apos;m Medianto Susilo. I build visual experiences across art,
-          UI/UX, games, web, and whatever strange little idea feels worth
-          turning into something real.
+          UI/UX, games, web, and the random ideas that feel interesting enough
+          to become real.
         </p>
+
         <div className="hero__actions">
           <Link href="/work" className="button button--primary">
             Explore work <ArrowDownRight size={18} />
@@ -44,18 +40,28 @@ export function Hero() {
         animate={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
         transition={{ duration: 1, delay: 0.12 }}
       >
+        <div className="signal-orbit signal-orbit--outer" />
+        <div className="signal-orbit signal-orbit--inner" />
+        <div className="signal-pulse signal-pulse--one" />
+        <div className="signal-pulse signal-pulse--two" />
+
         <div className="signal-card signal-card--a">
           <span>ART</span><strong>01</strong>
         </div>
         <div className="signal-card signal-card--b">
           <span>UI/UX</span><strong>02</strong>
         </div>
+
         <div className="signal-core">
           <div className="signal-core__ring" />
           <span>IDEA</span>
         </div>
+
         <div className="signal-line signal-line--one" />
         <div className="signal-line signal-line--two" />
+        <div className="signal-dot signal-dot--one" />
+        <div className="signal-dot signal-dot--two" />
+        <div className="signal-dot signal-dot--three" />
       </motion.div>
     </section>
   );

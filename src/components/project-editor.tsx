@@ -212,7 +212,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           .split(",")
           .map((tool) => tool.trim())
           .filter(Boolean),
-        featured: form.featureured ?? form.featured,
+        featured: form.featured,
         published: form.published,
       };
 

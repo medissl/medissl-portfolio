@@ -1,24 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { ExplorationCloud, ToolFlow } from "@/components/about-interactive";
 import { Reveal } from "@/components/reveal";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "About Medianto Susilo, a Computer Science student focused on Interactive Multimedia.",
+  description:
+    "About Medianto Susilo, a Computer Science student focused on Interactive Multimedia.",
 };
 
-const tools = [
-  "Figma",
-  "Unity",
-  "Godot",
-  "Blender",
-  "Clip Studio Paint",
-  "FL Studio",
-  "C#",
-  "JavaScript",
-  "Python",
-  "SQL",
+const profile = [
+  ["Name", "Medianto Susilo"],
+  ["Based in", "Jakarta, Indonesia"],
+  ["University", "BINUS University"],
+  ["Study", "Computer Science · Interactive Multimedia"],
+  ["Languages", "Indonesian · English · Chinese"],
+  ["Creative interests", "Art · Guitar · Music production · Songwriting · Games · UI/UX"],
 ];
 
 export default function AboutPage() {
@@ -44,66 +42,67 @@ export default function AboutPage() {
             <h2>Curiosity first.</h2>
             <p>
               I enjoy making games, interfaces, illustrations, web experiences,
-              and small experiments. I don&apos;t want every project to solve a
-              giant problem. Sometimes a good enough reason to build something
-              is simply wanting to see whether an idea can become real.
+              and small experiments. I don&apos;t need every project to solve a
+              giant problem. Sometimes wanting to see an idea become real is
+              enough reason to build it.
             </p>
             <p>
-              My portfolio is intentionally allowed to change with me. Older
-              pieces can move into the archive, better work can replace them,
-              and experiments are allowed to stay experiments.
+              My portfolio is allowed to change with me. Older pieces can move
+              into the archive, better work can replace them, and experiments
+              are allowed to stay experiments.
             </p>
           </article>
         </Reveal>
 
         <Reveal delay={0.08}>
-          <article className="about-panel">
+          <article className="about-panel about-panel--interactive">
             <p className="eyebrow">CURRENTLY EXPLORING</p>
-            <div className="tag-cloud">
-              {[
-                "Game Development",
-                "UI / UX",
-                "Digital Art",
-                "Creative Coding",
-                "Interactive Media",
-                "Web Development",
-                "3D",
-                "AI Experiments",
-              ].map((item) => (
-                <span className="tag" key={item}>{item}</span>
-              ))}
-            </div>
+            <ExplorationCloud />
           </article>
         </Reveal>
 
         <Reveal>
           <article className="about-panel about-panel--wide">
-            <p className="eyebrow">TOOLS I REACH FOR</p>
-            <div className="tool-list">
-              {tools.map((tool, index) => (
-                <div className="tool-row" key={tool}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <strong>{tool}</strong>
-                </div>
-              ))}
-            </div>
+            <p className="eyebrow">TOOLS / WORKFLOW</p>
+            <h2>Pick a lane.</h2>
+            <ToolFlow />
           </article>
         </Reveal>
       </div>
 
       <Reveal>
+        <section className="profile-section">
+          <div className="profile-section__head">
+            <p className="eyebrow">PERSONAL / PROFESSIONAL</p>
+            <h2>The useful bits about me.</h2>
+          </div>
+
+          <div className="profile-grid">
+            {profile.map(([label, value]) => (
+              <div className="profile-row" key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+      </Reveal>
+
+      <Reveal>
         <div className="contact-panel" id="contact">
           <div>
-            <p className="eyebrow">SAY HELLO</p>
-            <h2>Find me where the code lives.</h2>
+            <p className="eyebrow">CONTACT</p>
+            <h2>Want to make something?</h2>
+            <p className="muted">
+              Email me at mediantozeng@gmail.com or reach me on WhatsApp at
+              0812 7635 8926.
+            </p>
           </div>
           <Link
-            href="https://github.com/medissl"
-            target="_blank"
-            rel="noreferrer"
+            href="mailto:mediantozeng@gmail.com"
             className="button button--primary"
           >
-            GitHub @medissl <ArrowUpRight size={18} />
+            Email me <ArrowUpRight size={18} />
           </Link>
         </div>
       </Reveal>

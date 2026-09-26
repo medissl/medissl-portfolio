@@ -6,6 +6,9 @@ import { notFound } from "next/navigation";
 import { getProjectBySlug } from "@/lib/projects";
 import { publicMediaUrl } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
@@ -71,9 +74,11 @@ export default async function ProjectPage({ params }: PageProps) {
         <aside>
           <p className="eyebrow">TOOLS</p>
           <div className="tag-cloud">
-            {project.tools.length ? project.tools.map((tool) => (
-              <span className="tag" key={tool}>{tool}</span>
-            )) : <span className="muted">Not listed</span>}
+            {project.tools.length ? (
+              project.tools.map((tool) => <span className="tag" key={tool}>{tool}</span>)
+            ) : (
+              <span className="muted">Not listed</span>
+            )}
           </div>
         </aside>
       </section>
@@ -84,6 +89,7 @@ export default async function ProjectPage({ params }: PageProps) {
           {gallery.map((media) => {
             const url = publicMediaUrl(media.path);
             if (!url) return null;
+
             return (
               <figure key={media.id} className="gallery-item">
                 <div className="gallery-item__image">
@@ -110,9 +116,11 @@ export default async function ProjectPage({ params }: PageProps) {
               <h2>Behind the final piece.</h2>
             </div>
           </div>
+
           {process.map((media) => {
             const url = publicMediaUrl(media.path);
             if (!url) return null;
+
             return (
               <figure key={media.id} className="gallery-item">
                 <div className="gallery-item__image">
