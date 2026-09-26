@@ -1622,13 +1622,14 @@ main {
 @media (max-width: 600px) {
   .shell,
   .site-footer {
-    width: min(calc(100% - 28px), var(--max));
+    width: min(calc(100% - 32px), var(--max));
+    margin-inline: auto;
   }
 
   .site-header { height: 64px; }
 
   .site-header__inner {
-    width: min(calc(100% - 28px), var(--max));
+    width: min(calc(100% - 32px), var(--max));
   }
 
   .nav { gap: 3px; }
@@ -1640,8 +1641,6 @@ main {
   }
 
   .hero {
-    width: 100%;
-    max-width: 100%;
     min-width: 0;
     padding-block: 64px;
     gap: 25px;
@@ -1694,9 +1693,11 @@ main {
   }
 
   .hero__visual {
+    width: min(100%, 340px);
     height: 350px;
+    margin-inline: auto;
     top: 2px;
-    overflow: clip;
+    overflow: visible;
   }
 
   .ambient__noise {
@@ -1729,21 +1730,29 @@ main {
   }
 
 
-  .signal-core { width: 126px; height: 126px; }
-  .signal-orbit--outer { width: 286px; height: 286px; }
-  .signal-orbit--inner { width: 205px; height: 205px; }
+  .signal-core { width: 122px; height: 122px; }
+  .signal-orbit--outer { width: 268px; height: 268px; }
+  .signal-orbit--inner { width: 194px; height: 194px; }
 
   .signal-card {
-    width: 126px;
-    height: 76px;
-    padding: 13px;
+    width: 118px;
+    height: 74px;
+    padding: 12px;
   }
 
   .signal-card strong { font-size: 23px; }
 
+  .signal-card--a {
+    left: 2%;
+  }
+
+  .signal-card--b {
+    right: 2%;
+  }
+
   .signal-card--c {
-    top: 2%;
-    right: 1%;
+    top: 3%;
+    right: 2%;
   }
 
   .section,
@@ -1818,6 +1827,12 @@ main {
 }
 
 @media (max-width: 480px) {
+  .shell,
+  .site-footer,
+  .site-header__inner {
+    width: min(calc(100% - 28px), var(--max));
+  }
+
   .nav__link,
   .nav__back {
     min-height: 36px;
