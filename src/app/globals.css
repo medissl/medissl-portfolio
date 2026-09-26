@@ -245,7 +245,7 @@ main { min-height: 70vh; }
   height: clamp(222px, 20vw, 262px);
   overflow: hidden;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   contain: layout paint;
 }
 
