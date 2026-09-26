@@ -246,6 +246,19 @@ main { min-height: 70vh; }
   overflow: hidden;
   display: flex;
   align-items: flex-start;
+  transition: height .34s cubic-bezier(.22, 1, .36, 1);
+}
+
+.hero-title-shell--compact {
+  height: clamp(208px, 18vw, 258px);
+}
+
+.hero-title-shell--dense {
+  height: clamp(198px, 17vw, 244px);
+}
+
+.hero-title-shell--long {
+  height: clamp(218px, 19vw, 270px);
 }
 
 .hero-title {
@@ -363,7 +376,7 @@ main { min-height: 70vh; }
 .hero__visual {
   height: 540px;
   position: relative;
-  top: -62px;
+  top: -32px;
   isolation: isolate;
 }
 
@@ -1484,6 +1497,18 @@ main { min-height: 70vh; }
     height: clamp(250px, 38vw, 330px);
   }
 
+  .hero-title-shell--compact {
+    height: clamp(215px, 31vw, 275px);
+  }
+
+  .hero-title-shell--dense {
+    height: clamp(205px, 29vw, 260px);
+  }
+
+  .hero-title-shell--long {
+    height: clamp(225px, 33vw, 285px);
+  }
+
   .hero-title--compact {
     font-size: clamp(3rem, 8vw, 5.15rem);
   }
@@ -1498,7 +1523,7 @@ main { min-height: 70vh; }
     max-width: 620px;
     width: 100%;
     margin: 0 auto;
-    top: -18px;
+    top: -2px;
   }
 
   .featured-carousel__stage,
@@ -1562,6 +1587,18 @@ main { min-height: 70vh; }
     height: 300px;
   }
 
+  .hero-title-shell--compact {
+    height: 246px;
+  }
+
+  .hero-title-shell--dense {
+    height: 232px;
+  }
+
+  .hero-title-shell--long {
+    height: 258px;
+  }
+
   .hero-title {
     font-size: clamp(3.15rem, 14vw, 5rem);
   }
@@ -1577,7 +1614,7 @@ main { min-height: 70vh; }
 
   .hero__visual {
     height: 350px;
-    top: -18px;
+    top: 2px;
   }
 
 
@@ -1683,5 +1720,17 @@ main { min-height: 70vh; }
 
   .hero-title-shell {
     height: 285px;
+  }
+
+  .hero-title-shell--compact {
+    height: 238px;
+  }
+
+  .hero-title-shell--dense {
+    height: 224px;
+  }
+
+  .hero-title-shell--long {
+    height: 250px;
   }
 }

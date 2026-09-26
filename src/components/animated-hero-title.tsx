@@ -94,7 +94,7 @@ export function AnimatedHeroTitle() {
   }, [phraseIndex, reducedMotion]);
 
   return (
-    <div className="hero-title-shell">
+    <div className={`hero-title-shell hero-title-shell--${displaySize}`}>
       <h1
         className={`hero-title hero-title--${displaySize}`}
         aria-label="I make things that feel alive."
