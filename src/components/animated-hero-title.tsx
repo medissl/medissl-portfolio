@@ -11,25 +11,40 @@ const phrases = [
   { text: "Aku membuat hal-hal yang terasa hidup.", size: "long" },
 ] as const;
 
+type PhraseSize = (typeof phrases)[number]["size"];
+
 const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アイウエオ가나다라마바사中文";
+
+function scrambledText(target: string) {
+  return target
+    .split("")
+    .map((character) => {
+      if (character === " ") return " ";
+      return glyphs[Math.floor(Math.random() * glyphs.length)];
+    })
+    .join("");
+}
 
 export function AnimatedHeroTitle() {
   const reducedMotion = useReducedMotion();
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [display, setDisplay] = useState<string>(phrases[0].text);
+  const [displaySize, setDisplaySize] = useState<PhraseSize>(phrases[0].size);
   const [revealedCount, setRevealedCount] = useState(phrases[0].text.length);
 
   useEffect(() => {
-    const target = phrases[phraseIndex].text;
+    const phrase = phrases[phraseIndex];
+    const target = phrase.text;
 
     if (reducedMotion) {
       const nextTimer = window.setTimeout(() => {
         const nextIndex = (phraseIndex + 1) % phrases.length;
-        const nextPhrase = phrases[nextIndex].text;
+        const nextPhrase = phrases[nextIndex];
 
+        setDisplay(nextPhrase.text);
+        setDisplaySize(nextPhrase.size);
+        setRevealedCount(nextPhrase.text.length);
         setPhraseIndex(nextIndex);
-        setDisplay(nextPhrase);
-        setRevealedCount(nextPhrase.length);
       }, 4200);
 
       return () => window.clearTimeout(nextTimer);
@@ -37,6 +52,12 @@ export function AnimatedHeroTitle() {
 
     let reveal = 0;
     let nextTimer: number | undefined;
+
+    // Swap the text and its size together. This prevents a long outgoing phrase
+    // from briefly inheriting the much larger English size between transitions.
+    setDisplay(scrambledText(target));
+    setDisplaySize(phrase.size);
+    setRevealedCount(0);
 
     const scrambleTimer = window.setInterval(() => {
       const revealed = Math.floor(reveal);
@@ -72,12 +93,10 @@ export function AnimatedHeroTitle() {
     };
   }, [phraseIndex, reducedMotion]);
 
-  const size = phrases[phraseIndex].size;
-
   return (
     <div className="hero-title-shell">
       <h1
-        className={`hero-title hero-title--${size}`}
+        className={`hero-title hero-title--${displaySize}`}
         aria-label="I make things that feel alive."
       >
         <span className="hero-title__text" aria-hidden="true">

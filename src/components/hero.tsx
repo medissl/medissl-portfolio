@@ -46,12 +46,15 @@ export function Hero() {
         <div className="signal-pulse signal-pulse--two" />
 
         <div className="signal-card signal-card--a">
+          <span className="signal-card__dot" />
           <span>ART</span><strong>01</strong>
         </div>
         <div className="signal-card signal-card--b">
+          <span className="signal-card__dot" />
           <span>UI/UX</span><strong>02</strong>
         </div>
         <div className="signal-card signal-card--c">
+          <span className="signal-card__dot" />
           <span>CODE</span><strong>03</strong>
         </div>
 

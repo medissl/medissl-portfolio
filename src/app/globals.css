@@ -441,6 +441,7 @@ main { min-height: 70vh; }
   width: 160px;
   height: 96px;
   padding: 18px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -450,13 +451,61 @@ main { min-height: 70vh; }
   box-shadow:
     0 18px 70px rgba(0,0,0,.3),
     0 0 24px rgba(76, 205, 255, .08);
+  scale: 1;
+  transition:
+    scale .24s cubic-bezier(.22,1,.36,1),
+    border-color .24s ease,
+    box-shadow .24s ease,
+    background .24s ease;
 }
 
-.signal-card span {
+.signal-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -55%;
+  width: 52%;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  box-shadow: 0 0 12px rgba(112, 239, 255, .78);
+  opacity: 0;
+}
+
+.signal-card:hover {
+  scale: 1.055;
+  border-color: rgba(112, 235, 255, .68);
+  background: linear-gradient(135deg, rgba(13, 42, 74, .92), rgba(7, 19, 35, .78));
+  box-shadow:
+    0 22px 76px rgba(0,0,0,.34),
+    0 0 30px rgba(76, 221, 255, .18),
+    inset 0 0 24px rgba(83, 219, 255, .055);
+}
+
+.signal-card:hover::before {
+  opacity: 1;
+  animation: signal-card-shine .9s ease forwards;
+}
+
+.signal-card > span:not(.signal-card__dot) {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 10px;
   letter-spacing: .15em;
   color: #a9d8ec;
+}
+
+.signal-card__dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--cyan);
+  box-shadow:
+    0 0 7px rgba(120, 245, 255, .95),
+    0 0 16px rgba(80, 207, 255, .62);
+  animation: card-dot-pulse 1.9s ease-in-out infinite;
 }
 
 .signal-card strong {
@@ -1372,6 +1421,26 @@ main { min-height: 70vh; }
 @keyframes float-c {
   0%,100% { transform: translateY(0) rotate(3deg); }
   50% { transform: translateY(-11px) rotate(6deg); }
+}
+
+@keyframes signal-card-shine {
+  from { left: -55%; }
+  to { left: 108%; }
+}
+
+@keyframes card-dot-pulse {
+  0%, 100% {
+    opacity: .52;
+    box-shadow:
+      0 0 6px rgba(120, 245, 255, .72),
+      0 0 12px rgba(80, 207, 255, .38);
+  }
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 9px rgba(120, 245, 255, 1),
+      0 0 20px rgba(80, 207, 255, .78);
+  }
 }
 
 @keyframes line-scan {
