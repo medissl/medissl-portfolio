@@ -3,6 +3,7 @@ import { AmbientBackground } from "@/components/ambient-bg";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
+import "./admin.css";
 
 export const metadata: Metadata = {
   title: {
@@ -11,7 +12,6 @@ export const metadata: Metadata = {
   },
   description:
     "Art, UI/UX, interactive media, games, and creative coding by Medianto Susilo.",
-  metadataBase: new URL("https://medissl.vercel.app"),
   openGraph: {
     title: "Medianto Susilo — Creative Portfolio",
     description:
