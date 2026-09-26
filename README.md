@@ -1,114 +1,148 @@
 # Medianto Susilo — Creative Portfolio
 
-A live portfolio and lightweight CMS for my art, UI/UX, interactive media, games, and creative experiments.
+A live creative portfolio and lightweight CMS for my art, UI/UX, interactive media, games, web work, and the random ideas that feel interesting enough to become real.
 
-**Live site:** https://medissl-portfolio.vercel.app
+**Live site:** [medissl-portfolio.vercel.app](https://medissl-portfolio.vercel.app)
+
+## Preview
+
+![Animated preview of the portfolio homepage](docs/screenshots/main-page-preview.gif)
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/art-carousel.png" alt="Featured artwork carousel on the public homepage" />
+      <br />
+      <sub><b>Public portfolio</b> — featured artwork carousel</sub>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/admin-carousel.png" alt="Admin interface for changing homepage carousel order" />
+      <br />
+      <sub><b>Private CMS</b> — manual carousel ordering</sub>
+    </td>
+  </tr>
+</table>
 
 ## Why I built it
 
-I wanted the portfolio itself to be part of the portfolio: not just a static gallery, but a small publishing system I can keep using as my work changes.
+I wanted the portfolio itself to be part of the portfolio.
 
-The public site is intentionally visual and minimal, with a dark electric-blue identity, animated multilingual hero typography, interactive motion, project showcases, and responsive layouts.
+Instead of making a static gallery that I would have to keep rebuilding, I made a small publishing system that can grow with my work. The public side focuses on presentation and interaction, while the private admin side handles the repetitive work of adding projects, uploading media, publishing drafts, and deciding what gets featured.
 
-Behind it is a private CMS where I can add and edit projects, upload artwork, keep drafts unpublished, feature selected work, manually reorder the homepage carousel, and update the portfolio without editing source code for every change.
+The result is one project serving two purposes: a personal creative portfolio and a CMS I can actually keep using.
 
-## Stack
-
-- Next.js 16 + App Router
-- React 19
-- TypeScript
-- Tailwind CSS
-- Motion
-- Supabase Postgres
-- Supabase Auth
-- Supabase Storage
-- Vercel
-- GitHub Actions
-
-## Features
+## What it does
 
 ### Public portfolio
 
-- Responsive dark / electric-blue visual system
+- Dark / electric-blue visual system
 - Animated multilingual hero headline
 - Interactive hero graphic and motion effects
-- Featured-work homepage carousel
-- Manual carousel ordering from the CMS
-- Art and project gallery with category filters
+- Featured-work carousel
+- Art and project archive with category filters
 - Dynamic project detail pages
-- Gallery and process sections for finished work, sketches, wireframes, and iterations
-- Responsive layouts tuned separately for desktop, tablet, and mobile
+- Finished-work, gallery, and process-image sections
+- Responsive layouts for desktop, tablet, and mobile
 - Reduced-motion support
-- SEO metadata and accessible navigation
+- Accessible navigation and metadata for sharing/search
 
-### Admin / CMS
+### Private CMS
 
-- Private email/password admin login
-- No public account registration flow
+- Email/password admin authentication
+- No public sign-up flow
+- Create and edit portfolio projects
+- Upload cover, gallery, and process images directly to Supabase Storage
 - Draft / publish workflow
+- Public visibility controls
 - Featured-project controls
 - Manual homepage carousel ordering
-- Direct image uploads to Supabase Storage
-- Browser draft persistence for unsaved form data and selected files
-- Project editing and deletion
-- Public visibility controls
+- Browser persistence for unsaved form data and selected files
+- Project and media deletion
 - Row Level Security protecting project and media writes
 
-## How the CMS is protected
+## Stack
 
-The browser-side admin interface is not the security boundary.
+- **Framework:** Next.js 16 · App Router · React 19
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + custom CSS
+- **Motion:** Motion
+- **Database:** Supabase Postgres
+- **Authentication:** Supabase Auth
+- **Media:** Supabase Storage
+- **Hosting:** Vercel
+- **CI:** GitHub Actions
 
-Supabase Row Level Security protects database writes, and write access is limited to authenticated users whose UUID exists in `public.admin_users`. The Supabase key used by the frontend is a publishable key and is safe to expose in browser code.
+## Architecture
 
-Never commit a Supabase secret or service-role key to the repository.
+The public pages read published portfolio data from Supabase and render it through Next.js.
+
+The admin interface authenticates with Supabase Auth. Being able to see or modify the client-side admin code does **not** grant write access: database mutations are protected by Supabase Row Level Security, and admin writes are restricted to authenticated users registered in `public.admin_users`.
+
+The frontend uses a Supabase **publishable key**, which is intended for browser use. Secret/service-role keys are never required by the client and should never be committed to the repository.
+
+## Project structure
+
+```text
+src/
+├─ app/
+│  ├─ admin/              # Private CMS routes
+│  ├─ work/               # Portfolio archive + project routes
+│  └─ page.tsx            # Homepage
+├─ components/            # Hero, carousel, CMS editor, UI sections
+└─ lib/                   # Supabase, project queries, types, draft storage
+
+supabase/
+└─ migrations/            # Database schema and RLS changes
+
+docs/
+└─ screenshots/           # README previews
+```
 
 ## Local development
-
-Install dependencies and start the development server:
 
 ```bash
 npm install
 npm run dev
 ```
 
-The app ships with its Supabase project URL and publishable key as public fallbacks. You can override them locally:
+The repository includes the public Supabase project URL and publishable key as browser-safe fallbacks. They can be overridden locally:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 ```
 
-Never put a Supabase secret/service-role key in a `NEXT_PUBLIC_*` variable.
+Never put a Supabase secret or service-role key in a `NEXT_PUBLIC_*` variable.
 
 ## First admin setup
 
-The CMS deliberately has no public sign-up button.
+The CMS deliberately has no public registration button.
 
 1. Create the portfolio owner's Auth user in the Supabase dashboard.
-2. Copy that user's UUID.
-3. Add it to `public.admin_users`:
+2. Copy the user's UUID.
+3. Add that UUID to `public.admin_users`:
 
 ```sql
 insert into public.admin_users (user_id)
 values ('YOUR_AUTH_USER_UUID');
 ```
 
-After that, sign in at `/admin`.
+After that, sign in through `/admin`.
 
-## Database
+## Database migrations
 
-Database schema and security changes are tracked in:
+- `001_initial_portfolio_schema.sql` — projects, media, storage, indexes, and initial RLS
+- `002_harden_rls_policies.sql` — security-policy hardening
+- `003_add_carousel_order.sql` — manual homepage carousel ordering
 
-- `supabase/migrations/001_initial_portfolio_schema.sql` — initial tables, storage setup, indexes, and RLS
-- `supabase/migrations/002_harden_rls_policies.sql` — security policy hardening
-- `supabase/migrations/003_add_carousel_order.sql` — manual homepage carousel ordering
-
-The live Supabase project is kept aligned with these migrations.
+The live Supabase project is kept aligned with the migrations in `supabase/migrations/`.
 
 ## Deployment
 
-Pushes to `main` run lint/build checks through GitHub Actions and trigger a Vercel deployment.
+Pushes to `main` run the repository's lint/build workflow through GitHub Actions and trigger a Vercel deployment.
 
-Production:
+**Production:** [medissl-portfolio.vercel.app](https://medissl-portfolio.vercel.app)
 
-https://medissl-portfolio.vercel.app
+---
+
+Built and maintained by **Medianto Susilo**.
