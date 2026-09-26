@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Plus } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { AdminGuard } from "@/components/admin-guard";
 import { getBrowserSupabase } from "@/lib/supabase";
 import type { Project } from "@/lib/types";
@@ -17,36 +17,45 @@ function ProjectList() {
       const { data, error } = await supabase
         .from("projects")
         .select("*")
-        .order("display_order")
         .order("created_at", { ascending: false });
 
       if (error) {
         setStatus(error.message);
         return;
       }
+
       setProjects((data ?? []) as Project[]);
       setStatus("");
     }
+
     void load();
   }, [supabase]);
 
   return (
     <div className="admin-card admin-card--wide">
+      <Link href="/admin" className="back-link admin-page-back">
+        <ArrowLeft size={16} /> Admin home
+      </Link>
+
       <div className="admin-title-row">
         <div>
           <p className="eyebrow">PROJECTS</p>
           <h1>Everything in one place.</h1>
+          <p className="muted">
+            Open an item to edit it, change its visibility, or update its media.
+          </p>
         </div>
-        <Link href="/admin/projects/new" className="button button--primary">
-          <Plus size={17} /> New project
-        </Link>
       </div>
 
       {status && <p className="form-message">{status}</p>}
 
       <div className="admin-project-list">
         {projects.map((project) => (
-          <Link href={`/admin/projects/${project.id}`} className="admin-project-row" key={project.id}>
+          <Link
+            href={`/admin/projects/${project.id}`}
+            className="admin-project-row"
+            key={project.id}
+          >
             <div>
               <span className={project.published ? "status-dot is-live" : "status-dot"} />
               <div>
@@ -56,16 +65,17 @@ function ProjectList() {
             </div>
             <div>
               {project.featured && <span className="mini-chip">Featured</span>}
-              <span className="mini-chip">{project.published ? "Published" : "Draft"}</span>
+              <span className="mini-chip">{project.published ? "Live" : "Draft"}</span>
               <ArrowUpRight size={17} />
             </div>
           </Link>
         ))}
+
         {!status && projects.length === 0 && (
           <div className="empty-state">
-            <p className="eyebrow">EMPTY CMS</p>
-            <h2>Your first piece starts here.</h2>
-            <Link href="/admin/projects/new" className="button button--primary">Create project</Link>
+            <p className="eyebrow">NO PROJECTS YET</p>
+            <h2>Your work will appear here after you create it.</h2>
+            <Link href="/admin" className="button button--ghost">Back to admin</Link>
           </div>
         )}
       </div>
@@ -74,5 +84,9 @@ function ProjectList() {
 }
 
 export default function AdminProjectsPage() {
-  return <AdminGuard><ProjectList /></AdminGuard>;
+  return (
+    <AdminGuard>
+      <ProjectList />
+    </AdminGuard>
+  );
 }

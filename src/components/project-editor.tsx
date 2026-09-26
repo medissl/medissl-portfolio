@@ -1,10 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Save, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
+import {
+  clearDraftFiles,
+  loadDraftFiles,
+  saveDraftFiles,
+} from "@/lib/admin-draft";
 import { getBrowserSupabase, publicMediaUrl } from "@/lib/supabase";
 import {
   PROJECT_CATEGORIES,
@@ -36,7 +47,6 @@ type FormState = {
   tools: string;
   featured: boolean;
   published: boolean;
-  display_order: number;
 };
 
 const initialForm: FormState = {
@@ -48,13 +58,14 @@ const initialForm: FormState = {
   year: new Date().getFullYear(),
   tools: "",
   featured: false,
-  published: false,
-  display_order: 0,
+  published: true,
 };
 
 export function ProjectEditor({ projectId }: { projectId?: string }) {
   const supabase = getBrowserSupabase();
   const router = useRouter();
+  const draftKey = `project-editor:${projectId ?? "new"}`;
+
   const [form, setForm] = useState<FormState>(initialForm);
   const [project, setProject] = useState<Project | null>(null);
   const [media, setMedia] = useState<ProjectMedia[]>([]);
@@ -64,6 +75,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
   const [slugTouched, setSlugTouched] = useState(Boolean(projectId));
   const [status, setStatus] = useState(projectId ? "Loading project…" : "");
   const [saving, setSaving] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
 
   const coverPreview = useMemo(
     () => (coverFile ? URL.createObjectURL(coverFile) : null),
@@ -71,43 +83,82 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
   );
 
   useEffect(() => {
-    if (!projectId) return;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        let base = initialForm;
 
-    async function load() {
-      const [{ data: projectData, error }, { data: mediaData }] = await Promise.all([
-        supabase.from("projects").select("*").eq("id", projectId).single(),
-        supabase
-          .from("project_media")
-          .select("*")
-          .eq("project_id", projectId)
-          .order("display_order"),
-      ]);
+        if (projectId) {
+          const [{ data: projectData, error }, { data: mediaData }] = await Promise.all([
+            supabase.from("projects").select("*").eq("id", projectId).single(),
+            supabase
+              .from("project_media")
+              .select("*")
+              .eq("project_id", projectId)
+              .order("display_order"),
+          ]);
 
-      if (error || !projectData) {
-        setStatus("Could not load this project.");
-        return;
-      }
+          if (error || !projectData) {
+            setStatus("Could not load this project.");
+            setDraftReady(true);
+            return;
+          }
 
-      const loaded = projectData as Project;
-      setProject(loaded);
-      setMedia((mediaData ?? []) as ProjectMedia[]);
-      setForm({
-        title: loaded.title,
-        slug: loaded.slug,
-        category: loaded.category,
-        short_description: loaded.short_description,
-        description: loaded.description,
-        year: loaded.year,
-        tools: loaded.tools.join(", "),
-        featured: loaded.featured,
-        published: loaded.published,
-        display_order: loaded.display_order,
-      });
-      setStatus("");
-    }
+          const loaded = projectData as Project;
+          setProject(loaded);
+          setMedia((mediaData ?? []) as ProjectMedia[]);
 
-    void load();
-  }, [projectId, supabase]);
+          base = {
+            title: loaded.title,
+            slug: loaded.slug,
+            category: loaded.category,
+            short_description: loaded.short_description,
+            description: loaded.description,
+            year: loaded.year,
+            tools: loaded.tools.join(", "),
+            featured: loaded.featured,
+            published: loaded.published,
+          };
+        }
+
+        const locallySaved = window.localStorage.getItem(draftKey);
+        if (locallySaved) {
+          try {
+            base = { ...base, ...JSON.parse(locallySaved) } as FormState;
+            setStatus("Restored your unsaved draft.");
+          } catch {
+            window.localStorage.removeItem(draftKey);
+          }
+        } else {
+          setStatus("");
+        }
+
+        setForm(base);
+
+        const [cover, gallery, process] = await Promise.all([
+          loadDraftFiles(draftKey, "cover"),
+          loadDraftFiles(draftKey, "gallery"),
+          loadDraftFiles(draftKey, "process"),
+        ]);
+
+        setCoverFile(cover[0] ?? null);
+        setGalleryFiles(gallery);
+        setProcessFiles(process);
+        setDraftReady(true);
+      })();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [draftKey, projectId, supabase]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+
+    const timer = window.setTimeout(() => {
+      window.localStorage.setItem(draftKey, JSON.stringify(form));
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [draftKey, draftReady, form]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -123,23 +174,27 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
 
   async function uploadOne(userId: string, id: string, file: File, label: string) {
     const path = `${userId}/${id}/${label}-${crypto.randomUUID()}-${safeFileName(file.name)}`;
-    const { error } = await supabase.storage.from("portfolio-media").upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
+    const { error } = await supabase.storage
+      .from("portfolio-media")
+      .upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
     if (error) throw error;
     return path;
   }
 
   async function save(event: FormEvent) {
     event.preventDefault();
+
     if (!form.title.trim() || !form.slug.trim()) {
       setStatus("Title and slug are required.");
       return;
     }
 
     setSaving(true);
-    setStatus("Saving…");
+    setStatus(form.published ? "Publishing…" : "Saving draft…");
 
     try {
       const { data: session } = await supabase.auth.getSession();
@@ -157,9 +212,8 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           .split(",")
           .map((tool) => tool.trim())
           .filter(Boolean),
-        featured: form.featured,
+        featured: form.featureured ?? form.featured,
         published: form.published,
-        display_order: Number(form.display_order),
       };
 
       let id = projectId;
@@ -172,6 +226,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           .eq("id", id)
           .select("*")
           .single();
+
         if (error) throw error;
         savedProject = data as Project;
       } else {
@@ -180,6 +235,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           .insert(payload)
           .select("*")
           .single();
+
         if (error) throw error;
         savedProject = data as Project;
         id = savedProject.id;
@@ -193,13 +249,16 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           .eq("id", id)
           .select("*")
           .single();
+
         if (error) throw error;
         savedProject = data as Project;
       }
 
       async function uploadMedia(files: File[], section: "gallery" | "process") {
         if (!id) return;
+
         const existing = media.filter((item) => item.section === section).length;
+
         for (let index = 0; index < files.length; index += 1) {
           const file = files[index];
           const path = await uploadOne(user!.id, id, file, section);
@@ -211,6 +270,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
             section,
             display_order: existing + index,
           });
+
           if (error) throw error;
         }
       }
@@ -218,11 +278,15 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
       await uploadMedia(galleryFiles, "gallery");
       await uploadMedia(processFiles, "process");
 
+      window.localStorage.removeItem(draftKey);
+      await clearDraftFiles(draftKey);
+
       setProject(savedProject);
       setCoverFile(null);
       setGalleryFiles([]);
       setProcessFiles([]);
-      setStatus("Saved.");
+      setStatus(form.published ? "Published to the portfolio." : "Draft saved.");
+
       router.push(`/admin/projects/${savedProject.id}`);
       router.refresh();
     } catch (error) {
@@ -234,27 +298,74 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
 
   async function removeMedia(item: ProjectMedia) {
     if (!window.confirm("Remove this image from the project?")) return;
+
     await supabase.storage.from("portfolio-media").remove([item.path]);
-    const { error } = await supabase.from("project_media").delete().eq("id", item.id);
-    if (!error) setMedia((current) => current.filter((mediaItem) => mediaItem.id !== item.id));
+    const { error } = await supabase
+      .from("project_media")
+      .delete()
+      .eq("id", item.id);
+
+    if (!error) {
+      setMedia((current) => current.filter((mediaItem) => mediaItem.id !== item.id));
+    }
   }
 
   async function removeProject() {
-    if (!projectId || !window.confirm("Delete this entire project? This cannot be undone.")) return;
+    if (
+      !projectId ||
+      !window.confirm("Delete this entire project? This cannot be undone.")
+    ) {
+      return;
+    }
+
     setSaving(true);
+
     const paths = [
       ...(project?.cover_path ? [project.cover_path] : []),
       ...media.map((item) => item.path),
     ];
-    if (paths.length) await supabase.storage.from("portfolio-media").remove(paths);
-    const { error } = await supabase.from("projects").delete().eq("id", projectId);
-    if (!error) router.push("/admin/projects");
-    else setStatus(error.message);
+
+    if (paths.length) {
+      await supabase.storage.from("portfolio-media").remove(paths);
+    }
+
+    const { error } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", projectId);
+
+    if (!error) {
+      window.localStorage.removeItem(draftKey);
+      await clearDraftFiles(draftKey);
+      router.push("/admin/projects");
+    } else {
+      setStatus(error.message);
+    }
+
     setSaving(false);
   }
 
-  function filesFrom(event: ChangeEvent<HTMLInputElement>) {
-    return Array.from(event.target.files ?? []);
+  async function setCover(files: File[]) {
+    const file = files[0] ?? null;
+    setCoverFile(file);
+    await saveDraftFiles(draftKey, "cover", file ? [file] : []);
+  }
+
+  async function addFiles(
+    event: ChangeEvent<HTMLInputElement>,
+    slot: "gallery" | "process",
+  ) {
+    const incoming = Array.from(event.target.files ?? []);
+
+    if (slot === "gallery") {
+      const combined = [...galleryFiles, ...incoming];
+      setGalleryFiles(combined);
+      await saveDraftFiles(draftKey, slot, combined);
+    } else {
+      const combined = [...processFiles, ...incoming];
+      setProcessFiles(combined);
+      await saveDraftFiles(draftKey, slot, combined);
+    }
   }
 
   return (
@@ -263,75 +374,140 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
         <Link href="/admin/projects" className="back-link">
           <ArrowLeft size={16} /> Projects
         </Link>
-        <div className="editor__actions">
-          {projectId && (
-            <button className="button danger" type="button" onClick={removeProject} disabled={saving}>
-              <Trash2 size={16} /> Delete
-            </button>
-          )}
-          <button className="button button--primary" type="submit" disabled={saving}>
-            <Save size={16} /> {saving ? "Saving…" : "Save project"}
-          </button>
-        </div>
       </div>
 
       <div className="editor__heading">
         <p className="eyebrow">{projectId ? "EDIT PROJECT" : "NEW PROJECT"}</p>
         <h1>{form.title || "Untitled work"}</h1>
+        <p className="draft-note">
+          Unsaved text and selected images are preserved in this browser, so you
+          can leave this page and come back without starting over.
+        </p>
         {status && <p className="form-message">{status}</p>}
       </div>
 
       <div className="editor-grid">
         <section className="editor-panel">
           <h2>Basics</h2>
-          <label>Title
-            <input value={form.title} onChange={(e) => titleChanged(e.target.value)} required />
+
+          <label>
+            Title
+            <input
+              value={form.title}
+              onChange={(event) => titleChanged(event.target.value)}
+              required
+            />
           </label>
-          <label>Slug
+
+          <label>
+            Slug
             <input
               value={form.slug}
-              onChange={(e) => {
+              onChange={(event) => {
                 setSlugTouched(true);
-                update("slug", e.target.value);
+                update("slug", event.target.value);
               }}
               required
             />
           </label>
-          <label>Category
-            <select value={form.category} onChange={(e) => update("category", e.target.value as ProjectCategory)}>
-              {PROJECT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
+
+          <label>
+            Category
+            <select
+              value={form.category}
+              onChange={(event) =>
+                update("category", event.target.value as ProjectCategory)
+              }
+            >
+              {PROJECT_CATEGORIES.map((category) => (
+                <option key={category}>{category}</option>
+              ))}
             </select>
           </label>
-          <div className="form-row">
-            <label>Year
-              <input type="number" value={form.year} onChange={(e) => update("year", Number(e.target.value))} />
+
+          <label>
+            Year
+            <input
+              type="number"
+              value={form.year}
+              onChange={(event) => update("year", Number(event.target.value))}
+            />
+          </label>
+
+          <label>
+            Short description
+            <textarea
+              rows={3}
+              value={form.short_description}
+              onChange={(event) =>
+                update("short_description", event.target.value)
+              }
+            />
+          </label>
+
+          <label>
+            Full description
+            <textarea
+              rows={10}
+              value={form.description}
+              onChange={(event) => update("description", event.target.value)}
+            />
+          </label>
+
+          <label>
+            Tools <span className="label-note">comma separated</span>
+            <input
+              value={form.tools}
+              onChange={(event) => update("tools", event.target.value)}
+              placeholder="Figma, Clip Studio Paint, Blender"
+            />
+          </label>
+
+          <div className="visibility-panel">
+            <label>
+              <input
+                type="checkbox"
+                checked={form.published}
+                onChange={(event) => update("published", event.target.checked)}
+              />
+              <span>
+                <strong>Visible on public site</strong>
+                <small>
+                  Turn this off when you want to keep the project as a private draft.
+                </small>
+              </span>
             </label>
-            <label>Display order
-              <input type="number" value={form.display_order} onChange={(e) => update("display_order", Number(e.target.value))} />
+
+            <label>
+              <input
+                type="checkbox"
+                checked={form.featured}
+                onChange={(event) => update("featured", event.target.checked)}
+              />
+              <span>
+                <strong>Feature on homepage</strong>
+                <small>
+                  Featured work gets priority in the homepage carousel.
+                </small>
+              </span>
             </label>
-          </div>
-          <label>Short description
-            <textarea rows={3} value={form.short_description} onChange={(e) => update("short_description", e.target.value)} />
-          </label>
-          <label>Full description
-            <textarea rows={10} value={form.description} onChange={(e) => update("description", e.target.value)} />
-          </label>
-          <label>Tools <span className="label-note">comma separated</span>
-            <input value={form.tools} onChange={(e) => update("tools", e.target.value)} placeholder="Figma, Clip Studio Paint, Blender" />
-          </label>
-          <div className="check-row">
-            <label><input type="checkbox" checked={form.featured} onChange={(e) => update("featured", e.target.checked)} /> Featured</label>
-            <label><input type="checkbox" checked={form.published} onChange={(e) => update("published", e.target.checked)} /> Published</label>
           </div>
         </section>
 
         <section className="editor-panel">
           <h2>Media</h2>
+
           <label className="upload-box">
             <Upload size={20} />
             <strong>Cover image</strong>
             <span>{coverFile?.name || "Choose JPG, PNG, WebP, GIF, or AVIF"}</span>
-            <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) =>
+                void setCover(Array.from(event.target.files ?? []))
+              }
+            />
           </label>
 
           {(coverPreview || publicMediaUrl(project?.cover_path)) && (
@@ -350,15 +526,33 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           <label className="upload-box">
             <Upload size={20} />
             <strong>Gallery images</strong>
-            <span>{galleryFiles.length ? `${galleryFiles.length} selected` : "Select one or more images"}</span>
-            <input type="file" accept="image/*" multiple onChange={(e) => setGalleryFiles(filesFrom(e))} />
+            <span>
+              {galleryFiles.length
+                ? `${galleryFiles.length} selected and preserved`
+                : "Select one or more images"}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(event) => void addFiles(event, "gallery")}
+            />
           </label>
 
           <label className="upload-box">
             <Upload size={20} />
             <strong>Process images</strong>
-            <span>{processFiles.length ? `${processFiles.length} selected` : "Sketches, wireframes, iterations…"}</span>
-            <input type="file" accept="image/*" multiple onChange={(e) => setProcessFiles(filesFrom(e))} />
+            <span>
+              {processFiles.length
+                ? `${processFiles.length} selected and preserved`
+                : "Sketches, wireframes, iterations…"}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(event) => void addFiles(event, "process")}
+            />
           </label>
 
           {media.length > 0 && (
@@ -366,11 +560,22 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
               {media.map((item) => {
                 const url = publicMediaUrl(item.path);
                 if (!url) return null;
+
                 return (
                   <div className="media-admin-item" key={item.id}>
-                    <Image src={url} alt={item.alt_text || "Project media"} fill sizes="180px" className="project-cover__image" />
+                    <Image
+                      src={url}
+                      alt={item.alt_text || "Project media"}
+                      fill
+                      sizes="180px"
+                      className="project-cover__image"
+                    />
                     <span>{item.section}</span>
-                    <button type="button" onClick={() => removeMedia(item)} aria-label="Delete image">
+                    <button
+                      type="button"
+                      onClick={() => void removeMedia(item)}
+                      aria-label="Delete image"
+                    >
                       <Trash2 size={15} />
                     </button>
                   </div>
@@ -379,6 +584,36 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
             </div>
           )}
         </section>
+      </div>
+
+      <div className="editor-savebar">
+        <div>
+          {projectId && (
+            <button
+              className="button danger"
+              type="button"
+              onClick={() => void removeProject()}
+              disabled={saving}
+            >
+              <Trash2 size={16} /> Delete project
+            </button>
+          )}
+        </div>
+
+        <button
+          className="button button--primary editor-savebar__primary"
+          type="submit"
+          disabled={saving}
+        >
+          <Save size={17} />
+          {saving
+            ? "Saving…"
+            : form.published
+              ? projectId
+                ? "Publish changes"
+                : "Publish project"
+              : "Save draft"}
+        </button>
       </div>
     </form>
   );
