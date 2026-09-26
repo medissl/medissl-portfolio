@@ -32,6 +32,7 @@ export type Project = {
   featured: boolean;
   published: boolean;
   display_order: number;
+  carousel_order: number;
   created_at: string;
   updated_at: string;
 };

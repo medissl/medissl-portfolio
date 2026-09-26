@@ -25,11 +25,30 @@ export async function getFeaturedProjects(): Promise<Project[]> {
     .select("*")
     .eq("published", true)
     .eq("featured", true)
-    .order("display_order", { ascending: true })
+    .order("carousel_order", { ascending: true })
+    .order("created_at", { ascending: false })
     .limit(6);
 
   if (error) {
     console.error("Failed to load featured projects:", error.message);
+    return [];
+  }
+
+  return (data ?? []) as Project[];
+}
+
+export async function getCarouselFallbackProjects(): Promise<Project[]> {
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("published", true)
+    .order("carousel_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  if (error) {
+    console.error("Failed to load carousel projects:", error.message);
     return [];
   }
 

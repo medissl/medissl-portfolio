@@ -158,6 +158,107 @@
   margin-bottom: 40px;
 }
 
+.carousel-order-panel {
+  margin-bottom: 42px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(72, 205, 255, .08), transparent 34%),
+    rgba(4, 12, 24, .55);
+}
+
+.carousel-order-panel__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.carousel-order-panel__head h2 {
+  margin: 0 0 7px;
+  font-size: 22px;
+  letter-spacing: -.03em;
+}
+
+.carousel-order-panel__head p {
+  margin: 0;
+  max-width: 670px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.carousel-order-list {
+  border-top: 1px solid var(--line);
+}
+
+.carousel-order-row {
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.carousel-order-index {
+  color: var(--cyan);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11px;
+  letter-spacing: .08em;
+}
+
+.carousel-order-link {
+  min-width: 0;
+}
+
+.carousel-order-link strong,
+.carousel-order-link span {
+  display: block;
+}
+
+.carousel-order-link strong {
+  overflow: hidden;
+  margin-bottom: 4px;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.carousel-order-link span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.carousel-order-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.carousel-order-actions button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  background: rgba(71, 191, 255, .035);
+  color: #c7d9e6;
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease, background .2s ease;
+}
+
+.carousel-order-actions button:hover:not(:disabled) {
+  color: var(--cyan);
+  border-color: var(--line-strong);
+  background: rgba(71, 191, 255, .08);
+}
+
+.carousel-order-actions button:disabled {
+  opacity: .28;
+  cursor: default;
+}
+
 .admin-project-list { border-top: 1px solid var(--line); }
 
 .admin-project-row {
@@ -422,6 +523,19 @@
     align-items: flex-start;
     flex-direction: column;
     padding: 18px 0;
+  }
+
+  .carousel-order-panel {
+    padding: 16px;
+  }
+
+  .carousel-order-panel__head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .carousel-order-row {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
   }
 
   .media-admin-grid { grid-template-columns: repeat(2, 1fr); }

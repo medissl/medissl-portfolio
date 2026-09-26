@@ -487,7 +487,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
               <span>
                 <strong>Feature on homepage</strong>
                 <small>
-                  Featured work gets priority in the homepage carousel.
+                  Featured work gets priority in the homepage carousel. Reorder it from Manage Projects.
                 </small>
               </span>
             </label>

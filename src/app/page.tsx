@@ -5,18 +5,21 @@ import { DisciplineShowcase } from "@/components/discipline-showcase";
 import { FeaturedCarousel } from "@/components/featured-carousel";
 import { Hero } from "@/components/hero";
 import { Reveal } from "@/components/reveal";
-import { getFeaturedProjects, getPublishedProjects } from "@/lib/projects";
+import {
+  getCarouselFallbackProjects,
+  getFeaturedProjects,
+} from "@/lib/projects";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function Home() {
-  const [featured, published] = await Promise.all([
+  const [featured, fallback] = await Promise.all([
     getFeaturedProjects(),
-    getPublishedProjects(),
+    getCarouselFallbackProjects(),
   ]);
 
-  const carouselProjects = featured.length ? featured : published.slice(0, 6);
+  const carouselProjects = featured.length ? featured : fallback;
 
   return (
     <>
