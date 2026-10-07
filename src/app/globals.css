@@ -1852,7 +1852,6 @@ main {
 
 /* Compact browsing on phones and tablets; desktop retains its full canvas. */
 @media (max-width: 900px) {
-  .hero { padding-block: 40px; gap: 24px; }
   .section { padding-block: 44px; }
   .page { padding-block: 40px 56px; }
   .discipline-showcase { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1870,30 +1869,6 @@ main {
 }
 
 @media (max-width: 600px) {
-  .hero { padding-block: 30px 16px; gap: 12px; }
-  .hero-title-shell { height: 150px; align-items: flex-start; }
-  .hero-title--english { font-size: clamp(38px, 10.8vw, 58px); }
-  .hero-title--compact { font-size: clamp(33px, 9.4vw, 50px); }
-  .hero-title--chinese { font-size: clamp(36px, 10vw, 54px); }
-  .hero-title--dense { font-size: clamp(30px, 8.6vw, 46px); }
-  .hero-title--long { font-size: clamp(29px, 8.3vw, 44px); }
-  .hero__intro { transform: none; }
-  .hero__lede { margin-top: 12px; font-size: 15px; line-height: 1.65; }
-  .hero__actions { margin-top: 22px; gap: 10px; }
-  .hero__actions .button { flex: 1; }
-  .hero__visual { height: 220px; width: min(100%, 290px); top: 0; }
-  .signal-core { width: 88px; height: 88px; font-size: 10px; }
-  .signal-core__ring { inset: -28px; }
-  .signal-orbit--outer { width: 204px; height: 204px; }
-  .signal-orbit--inner { width: 148px; height: 148px; }
-  .signal-pulse--one { width: 94px; height: 94px; }
-  .signal-card { width: 90px; height: 58px; padding: 9px; }
-  .signal-card strong { font-size: 19px; }
-  .signal-card > span:not(.signal-card__dot) { font-size: 8px; }
-  .signal-card--a { top: 14%; left: 0; }
-  .signal-card--b { bottom: 6%; right: 0; }
-  .signal-card--c { top: 4%; right: 0; }
-
   .section { padding-block: 30px; }
   .section-heading { margin-bottom: 22px; gap: 16px; }
   .section-heading--compact { flex-direction: row; align-items: center; }
