@@ -10,10 +10,12 @@ for (let t = 0; t <= 5; t += 0.01) {
   const state = journeyAt(t);
   assert.ok(state.cameraZ <= previous + 0.000001, 'camera must never move backwards');
   assert.ok(state.cameraZ >= -17, 'camera must never pass the station');
-  if (t < 2) assert.ok(state.cameraZ >= 0.5, 'cart waits until debris has cleared');
+  if (t < 2) assert.ok(state.cameraZ >= -0.6, 'cart waits until debris has cleared');
   previous = state.cameraZ;
 }
 console.log('Journey timing, clearance, monotonic movement and final stop passed.');
+const drillReach = 2.92 + 1.175 * 0.72 * Math.cos(0.12) * Math.cos(0.32);
+assert.ok(Math.abs((journeyAt(1.2).cameraZ - drillReach) - (-4.31)) < 0.02, 'drill tip meets the stone at fracture');
 for (const count of [1, 2, 10, 13]) {
   let station = 0, tiles = [0, -48];
   const visited = [];

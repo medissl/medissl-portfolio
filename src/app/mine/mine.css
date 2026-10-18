@@ -13,13 +13,13 @@
 .mine-header button:hover,.mine-inspect:hover { color:#f0c784; }
 .mine-controls { position:absolute; bottom:27px; left:36px; right:36px; display:flex; align-items:end; justify-content:space-between; gap:24px; }
 .mine-caption { max-width:60%; }
-.mine-caption h1 { margin:7px 0 0; font-size:clamp(22px,2.5vw,32px); line-height:1.15; letter-spacing:-.025em; }
+.mine-caption h1 { margin:7px 0 0; font-size:clamp(20px,2vw,26px); font-weight:500; line-height:1.2; letter-spacing:-.02em; }
 .mine-count { font-size:11px; font-variant-numeric:tabular-nums; color:#c9c0ac; letter-spacing:.05em; }
-.mine-inspect { display:flex; align-items:center; gap:16px; background:none; border:0; padding:0; text-align:left; font:inherit; letter-spacing:inherit; }
+.mine-inspect { display:flex; align-items:center; gap:16px; background:none; border:0; padding:0 0 5px; border-bottom:1px solid #c6b78d80; text-align:left; font:inherit; letter-spacing:inherit; }
 .mine-inspect span { color:#c9b588; font-size:20px; }
 .mine-drive { text-align:right; flex-shrink:0; }
 .mine-travel-status { font-size:11px; color:#d2cbbc; margin:0 0 10px; min-height:16px; }
-.mine-primary { display:flex; align-items:center; justify-content:space-between; gap:38px; min-width:180px; background:#d8c39b; color:#232922; border:1px solid #efdcba; border-radius:2px; padding:14px 18px; font-size:13px; min-height:48px; }
+.mine-primary { display:block; min-width:156px; background:#d8c39b; color:#232922; border:1px solid #efdcba; border-radius:2px; padding:14px 22px; font-size:13px; min-height:48px; }
 .mine-primary:hover { background:#edddbd; }
 .mine-primary:active { transform:translateY(1px); }
 .mine-primary span { font-size:21px; line-height:1; }
@@ -33,6 +33,9 @@
 .mine-sheet p { line-height:1.65; }
 .mine-kicker { font-size:11px; color:#c8b68f; }
 .mine-description { font-size:17px; max-width:650px; color:#d9d9cc; }
+.mine-motion { display:flex; align-items:center; gap:12px; min-height:44px; font-size:15px; margin-top:24px; }
+.mine-motion input { width:18px; height:18px; accent-color:#d8c39b; }
+.mine-help { font-size:13px; color:#c0bcae; }
 .mine-gallery { margin:28px 0 20px; display:grid; gap:20px; }
 .mine-gallery figure { margin:0; min-width:0; }
 .mine-gallery img { width:100%; height:auto; max-height:65dvh; object-fit:contain; background:#1b211f; }
@@ -64,7 +67,7 @@
  .mine-header button { font-size:12px; min-height:44px; }
  .mine-controls { left:20px; right:20px; bottom:max(20px,env(safe-area-inset-bottom)); display:block; }
  .mine-caption { max-width:none; margin-bottom:14px; }
- .mine-caption h1 { font-size:25px; margin-top:5px; }
+ .mine-caption h1 { font-size:23px; margin-top:5px; }
  .mine-inspect { justify-content:space-between; width:100%; }
  .mine-travel-status { text-align:left; font-size:10px; margin-bottom:8px; }
  .mine-primary { width:100%; }

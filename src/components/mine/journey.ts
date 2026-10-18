@@ -3,7 +3,8 @@ export function journeyAt(seconds: number) {
   const elapsed = Math.max(0, seconds);
   return {
     phase: elapsed < 1.2 ? "drilling" : elapsed < 2.1 ? "breaking" : elapsed < 4.5 ? "travelling" : "ready",
-    cameraZ: elapsed < 1.2 ? 7 - smooth(elapsed / 1.2) * 6.5 : 0.5 - smooth((elapsed - 2) / 2.5) * 17.5,
+    // The drill tip meets the stone face at -4.31 before the wall releases.
+    cameraZ: elapsed < 1.2 ? 7 - smooth(elapsed / 1.2) * 7.6 : -0.6 - smooth((elapsed - 2) / 2.5) * 16.4,
     complete: elapsed >= 4.5,
   };
 }

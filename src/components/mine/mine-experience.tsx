@@ -118,15 +118,15 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
           <div className="mine-caption">
             <span className="mine-count">{String(station + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
             <h1><button className="mine-inspect" aria-label={`Inspect ${current.title}`} onClick={() => open("project")} disabled={moving}>
-              {current.title} <span aria-hidden="true">↗</span>
+              {current.title}
             </button></h1>
           </div>
           <div className="mine-drive">
-            <p className="mine-travel-status" role="status">{moving
+            <p className="mine-sr" role="status">{moving
               ? phase === "drilling" ? "Drilling…" : phase === "breaking" ? "Breaking through…" : "Onward…"
               : reduced ? "Reduced motion: instant travel" : "W / ↑ to advance"}</p>
-            <button className="mine-primary" disabled={phase === "loading"} onClick={() => moving ? engine.current?.skip() : engine.current?.advance()}>
-              {moving ? "Skip" : lastStation ? "Return to the start" : "Drill onward"}<span aria-hidden="true">{lastStation && !moving ? "↻" : "↑"}</span>
+            <button className="mine-primary" disabled={phase === "loading" || moving} onClick={() => engine.current?.advance()}>
+              {moving ? "Drilling…" : lastStation ? "Return to the start" : reduced ? "Next project" : "Drill onward"}
             </button>
           </div>
         </footer>
@@ -163,6 +163,10 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
           {panel === "about" && <section>
             <h2 id="mine-panel-title">Medianto Susilo</h2>
             <p className="mine-description">Software, games, interactive experiments, and artwork.</p>
+            {!failed && <label className="mine-motion"><input type="checkbox" checked={reduced} disabled={phase === "loading"} onChange={event => {
+              const value = event.target.checked; setReduced(value); engine.current?.motion(value);
+            }} /> Instant travel</label>}
+            <p className="mine-help">W or ↑ advances. Escape skips a journey. Use Projects to visit any station.</p>
             <div className="mine-links">
               <a href="mailto:mediantozeng@gmail.com">mediantozeng@gmail.com ↗</a>
               <a href="https://github.com/medissl" target="_blank" rel="noreferrer">GitHub ↗</a>
