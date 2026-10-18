@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 import type { MineProject } from "./projects";
 import { journeyAt, nextStation, advanceSceneryTile } from "./journey";
+import { clipDisplay } from "./fracture";
 
 export type MineEngine = { advance: () => void; skip: () => void; jump: (index: number) => void; pause: (value: boolean) => void; dispose: () => void };
 type Events = { station: (index: number) => void; phase: (phase: string) => void; inspect: () => void; failed: () => void };
@@ -180,7 +181,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   scene.add(environment);
   const aheadEnvironment = environment.clone(true); aheadEnvironment.position.z = -48; scene.add(aheadEnvironment);
   const scenery = [environment, aheadEnvironment];
-  type Wall = { group: THREE.Group; chunks: THREE.Mesh[]; origins: THREE.Vector3[]; board: THREE.Group; cracks: THREE.LineSegments; picture: THREE.Mesh; frame: THREE.Mesh; backing: THREE.Mesh; plaque: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>; imageMaterial: THREE.MeshBasicMaterial; placeholder: THREE.Texture; revision: number; coverUrl: string | null };
+  type Wall = { group: THREE.Group; chunks: THREE.Mesh[]; origins: THREE.Vector3[]; triangles: THREE.Vector2[][]; faces: THREE.Mesh[]; cracks: THREE.LineSegments; surface: THREE.CanvasTexture; material: THREE.MeshBasicMaterial; revision: number; coverUrl: string | null };
   const walls: Wall[] = [];
   function writeLabel(material: THREE.MeshBasicMaterial, text: string, subtitle: string) {
     const c = material.map!.image as HTMLCanvasElement; const ctx = c.getContext("2d")!;
@@ -198,7 +199,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   }
   for (let index = 0; index < 2; index++) {
     const z = -5 - index * 24; const group = new THREE.Group(); group.position.z = z; scene.add(group);
-    const chunks: THREE.Mesh[] = []; const origins: THREE.Vector3[] = []; const edges: number[] = [];
+    const chunks: THREE.Mesh[] = []; const origins: THREE.Vector3[] = []; const edges: number[] = []; const triangles: THREE.Vector2[][] = [];
     // Authored pre-fracture: offset triangulated stone cells, animated without a physics engine.
     const cols = 6, rows = 4; const vertices: THREE.Vector2[][] = [];
     for (let row = 0; row <= rows; row++) {
@@ -211,19 +212,16 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
         const center = triangle.reduce((v, p) => v.add(p), new THREE.Vector2()).multiplyScalar(1 / 3);
         const shape = new THREE.Shape(triangle.map(v => v.clone().sub(center)));
         const g = new THREE.ExtrudeGeometry(shape, { depth: 0.6, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.03, bevelSegments: 1 });
-        const chunk = mesh(g, stone, center.x, center.y, (random() - 0.5) * 0.16, group); chunks.push(chunk); origins.push(chunk.position.clone());
-        for (let j = 0; j < 3; j++) { const a = triangle[j], b = triangle[(j + 1) % 3]; edges.push(a.x, a.y, 0.65, b.x, b.y, 0.65); }
+        const chunk = mesh(g, stone, center.x, center.y, 0, group); chunks.push(chunk); origins.push(chunk.position.clone()); triangles.push(triangle);
+        for (let j = 0; j < 3; j++) { const a = triangle[j], b = triangle[(j + 1) % 3]; edges.push(a.x, a.y, 0.72, b.x, b.y, 0.72); }
       }
     }
     const cg = new THREE.BufferGeometry(); cg.setAttribute("position", new THREE.Float32BufferAttribute(edges, 3));
     const cracks = new THREE.LineSegments(cg, new THREE.LineBasicMaterial({ color: "#efc48d", transparent: true, opacity: 0 })); group.add(cracks);
-    const board = new THREE.Group(); board.position.set(0, 2.95, 0.8); group.add(board);
-    const backing = box(0, 0, -0.08, 4.45, 2.8, 0.2, wood, board);
-    const frame = box(0, 0, 0.035, 4.12, 2.48, 0.08, iron, board);
-    const imageMaterial = label("", "", 600);
-    const picture = mesh(new THREE.PlaneGeometry(1, 1), imageMaterial, 0, 0, 0.1, board);
-    const plaque = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.75), label("", "")); plaque.position.set(0, -1.85, 0.15); board.add(plaque);
-    walls.push({ group, chunks, origins, board, cracks, picture, frame, backing, plaque, imageMaterial, placeholder: imageMaterial.map!, revision: 0, coverUrl: null });
+    const canvas = document.createElement("canvas"); canvas.width = 1280; canvas.height = 1024;
+    const surface = new THREE.CanvasTexture(canvas); surface.colorSpace = THREE.SRGBColorSpace; textures.push(surface);
+    const material = new THREE.MeshBasicMaterial({ map: surface, side: THREE.DoubleSide, toneMapped: false });
+    walls.push({ group, chunks, origins, triangles, faces: [], cracks, surface, material, revision: 0, coverUrl: null });
   }
   // Four decoded covers at most; only the current/next station are requested.
   // Revision checks keep a late image response from replacing a newer selection.
@@ -247,28 +245,51 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     });
     pendingCovers.set(url, promise); return promise;
   }
-  function sizeDisplay(wall: Wall, aspect: number) {
-    const width = Math.min(3.95, 2.3 * aspect), height = Math.min(2.3, 3.95 / aspect);
-    wall.picture.scale.set(width, height, 1);
-    wall.backing.scale.x = width + 0.5; wall.frame.scale.x = width + 0.2;
+  function display(wall: Wall, project: MineProject, image?: HTMLImageElement) {
+    const aspect = image ? image.width / image.height : project.portrait ? 0.6 : 1.72;
+    const art = project.kind === "artwork";
+    const imageWidth = Math.min(4.4, 2.8 * aspect), imageHeight = imageWidth / aspect;
+    const width = imageWidth + (art ? 0.5 : 0.22), height = imageHeight + 0.72;
+    const bottom = 3.15 - height / 2, left = -width / 2;
+    const canvas = wall.surface.image as HTMLCanvasElement;
+    const ctx = canvas.getContext("2d")!;
+    const scale = canvas.width / width;
+    const drawHeight = height * scale;
+    ctx.setTransform(1, 0, 0, canvas.height / drawHeight, 0, 0);
+    ctx.fillStyle = art ? "#e5d9bd" : "#212d2c"; ctx.fillRect(0, 0, canvas.width, drawHeight);
+    ctx.strokeStyle = art ? "#9c8156" : "#ac9770"; ctx.lineWidth = scale * 0.035;
+    ctx.strokeRect(3, 3, canvas.width - 6, drawHeight - 6);
+    const inset = (width - imageWidth) / 2 * scale;
+    if (image) ctx.drawImage(image, inset, inset, imageWidth * scale, imageHeight * scale);
+    ctx.fillStyle = art ? "#302c24" : "#f1e6cf"; ctx.textAlign = "center";
+    let size = image ? 0.16 : 0.28; ctx.font = `500 ${size * scale}px Arial`;
+    while (ctx.measureText(project.title).width > canvas.width - 32 && size > 0.08) { size -= 0.01; ctx.font = `500 ${size * scale}px Arial`; }
+    ctx.fillText(project.title, canvas.width / 2, image ? drawHeight - 0.18 * scale : drawHeight * 0.48);
+    if (!image) { ctx.font = `${0.12 * scale}px Arial`; ctx.fillStyle = "#c4b797"; ctx.fillText(project.category, canvas.width / 2, drawHeight * 0.64); }
+    wall.surface.needsUpdate = true;
+    wall.faces.forEach(face => { face.removeFromParent(); face.geometry.dispose(); }); wall.faces = [];
+    wall.triangles.forEach((triangle, index) => {
+      const polygon = clipDisplay(triangle, left, bottom, width, height);
+      if (polygon.length < 3) return;
+      const position: number[] = [], uv: number[] = [], origin = wall.origins[index];
+      for (let i = 1; i < polygon.length - 1; i++) for (const p of [polygon[0], polygon[i], polygon[i + 1]]) {
+        position.push(p.x - origin.x, p.y - origin.y, 0.69); uv.push(p.u, p.v);
+      }
+      const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(position, 3)); geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+      const face = new THREE.Mesh(geometry, wall.material); wall.chunks[index].add(face); wall.faces.push(face);
+    });
   }
   function bindWall(wall: Wall, projectIndex: number, z: number) {
     const project = projects[projectIndex], revision = ++wall.revision;
-    wall.group.position.z = z; wall.group.visible = true; wall.board.visible = true; wall.board.scale.setScalar(1);
+    wall.group.position.z = z; wall.group.visible = true;
     wall.chunks.forEach((chunk, i) => { chunk.position.copy(wall.origins[i]); chunk.rotation.set(0, 0, 0); });
     wall.cracks.visible = true; (wall.cracks.material as THREE.LineBasicMaterial).opacity = 0; wall.cracks.geometry.setDrawRange(0, 0);
-    wall.imageMaterial.map = wall.placeholder; writeLabel(wall.imageMaterial, project.title, project.category);
-    writeLabel(wall.plaque.material, project.title, project.category);
-    wall.plaque.visible = Boolean(project.image);
-    sizeDisplay(wall, project.portrait ? 0.6 : 1.72);
+    display(wall, project);
     wall.coverUrl = project.image;
     if (project.image) void loadCover(project.image).then(texture => {
       if (disposed || wall.revision !== revision) return;
-      wall.imageMaterial.map = texture; wall.imageMaterial.needsUpdate = true;
-      const image = texture.image as HTMLImageElement;
-      sizeDisplay(wall, image.width / image.height);
+      display(wall, project, texture.image as HTMLImageElement);
     }).catch(() => { /* The named project plaque remains usable when a cover cannot load. */ });
-    wall.imageMaterial.needsUpdate = true;
   }
   // A small maker's plaque is physically mounted on the cart.
   const cart = new THREE.Group(); scene.add(cart);
@@ -338,7 +359,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const pointer = (e: PointerEvent) => { if (e.pointerType === "mouse") { pointerX = (e.clientX / host.clientWidth - 0.5) * 0.07; pointerY = (e.clientY / host.clientHeight - 0.5) * 0.025; } };
   const raycaster = new THREE.Raycaster();
-  const click = (e: MouseEvent) => { if (moving || paused) return; const rect = renderer.domElement.getBoundingClientRect(); raycaster.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera); if (raycaster.intersectObject(walls[0].board, true).length) events.inspect(); };
+  const click = (e: MouseEvent) => { if (moving || paused) return; const rect = renderer.domElement.getBoundingClientRect(); raycaster.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera); if (raycaster.intersectObjects(walls[0].faces).length) events.inspect(); };
   const lost = (e: Event) => { e.preventDefault(); events.failed(); };
   host.addEventListener("pointermove", pointer); renderer.domElement.addEventListener("click", click); renderer.domElement.addEventListener("webglcontextlost", lost);
   function render(now: number) {
@@ -357,9 +378,8 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
       if (elapsed < 1.2) {
         (wall.cracks.material as THREE.LineBasicMaterial).opacity = smooth(elapsed / 1.3);
         wall.cracks.geometry.setDrawRange(0, Math.floor(smooth(elapsed / 1.2) * wall.cracks.geometry.attributes.position.count / 2) * 2);
-        wall.board.scale.setScalar(1 - smooth((elapsed - 0.6) / 0.6));
       } else {
-        wall.board.visible = false; wall.cracks.visible = false;
+        wall.cracks.visible = false;
         const t = Math.max(0, elapsed - 1.2);
         wall.chunks.forEach((c, i) => { const o = wall.origins[i]; c.position.set(o.x + (o.x >= 0 ? 1 : -1) * t * (1.7 + i % 3 * 0.3), o.y - t * t * 6, o.z - t * (0.7 + i % 4 * 0.15)); c.rotation.set(t * (i % 3 - 1), t * 0.4, t * (i % 2 ? 0.6 : -0.6)); });
         dustMat.opacity = 0.35 + Math.sin(Math.min(t / 2, 1) * Math.PI) * 0.6; dustMat.size = 0.045 + Math.sin(Math.min(t / 2, 1) * Math.PI) * 0.13;
