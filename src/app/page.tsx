@@ -23,12 +23,12 @@ export default async function Home() {
 
   return (
     <>
-      <Hero />
+      <Hero projects={carouselProjects} />
 
       <section className="section shell" id="selected-work">
         <Reveal>
           <div className="section-heading section-heading--compact">
-            <p className="eyebrow">RECENT WORK</p>
+            <div><p className="eyebrow">A SELECTION FROM THE ARCHIVE</p><h2>Recent <em>work.</em></h2></div>
             <Link href="/work" className="text-link">
               View all work <ArrowUpRight size={17} />
             </Link>

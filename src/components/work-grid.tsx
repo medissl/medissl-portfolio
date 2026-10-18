@@ -29,12 +29,16 @@ export function WorkGrid({ projects }: { projects: Project[] }) {
             key={item}
             className={filter === item ? "filter is-active" : "filter"}
             onClick={() => setFilter(item)}
+            aria-pressed={filter === item}
             type="button"
           >
             {item}
           </button>
         ))}
       </div>
+      <p className="archive-count" role="status">
+        {String(filtered.length).padStart(2, "0")} {filtered.length === 1 ? "project" : "projects"} / {filter === "All" ? "The complete collection" : filter}
+      </p>
 
       {filtered.length ? (
         <div className="project-grid">

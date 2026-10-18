@@ -57,7 +57,7 @@ export default async function ProjectPage({ params }: PageProps) {
             fill
             priority
             sizes="100vw"
-            className="project-cover__image"
+            className={`project-cover__image${project.tools.includes("Aseprite") ? " pixel-art" : ""}`}
           />
         ) : (
           <div className="project-card__placeholder">
@@ -98,7 +98,7 @@ export default async function ProjectPage({ params }: PageProps) {
                     alt={media.alt_text || media.caption || project.title}
                     fill
                     sizes="100vw"
-                    className="project-cover__image"
+                    className={`project-cover__image${project.tools.includes("Aseprite") ? " pixel-art" : ""}`}
                   />
                 </div>
                 {media.caption && <figcaption>{media.caption}</figcaption>}
@@ -129,7 +129,7 @@ export default async function ProjectPage({ params }: PageProps) {
                     alt={media.alt_text || media.caption || `${project.title} process`}
                     fill
                     sizes="100vw"
-                    className="project-cover__image"
+                    className={`project-cover__image${project.tools.includes("Aseprite") ? " pixel-art" : ""}`}
                   />
                 </div>
                 {media.caption && <figcaption>{media.caption}</figcaption>}

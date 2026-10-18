@@ -1,76 +1,68 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowDownRight } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { AnimatedHeroTitle } from "@/components/animated-hero-title";
+import { publicMediaUrl } from "@/lib/supabase";
+import type { Project } from "@/lib/types";
 
-export function Hero() {
-  const reducedMotion = useReducedMotion();
+export function Hero({ projects }: { projects: Project[] }) {
+  const artworks = projects.filter((project) => project.cover_path).slice(0, 2);
 
   return (
     <section className="hero shell">
-      <motion.div
-        className="hero__copy"
-        initial={reducedMotion ? false : { opacity: 0, y: 18 }}
-        animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <div className="hero__topline">
+        <p className="eyebrow">THE PERSONAL PORTFOLIO OF MEDIANTO SUSILO</p>
+        <span>Jakarta, Indonesia ↗</span>
+      </div>
+      <div className="hero__copy">
         <AnimatedHeroTitle />
-
-        <div className="hero__intro">
-          <p className="hero__lede">
-            I&apos;m Medianto Susilo. I build visual experiences across art,
-            UI/UX, games, web, and the random ideas that feel interesting enough
-            to become real.
-          </p>
-
-          <div className="hero__actions">
-            <Link href="/work" className="button button--primary">
-              Explore work <ArrowDownRight size={18} />
-            </Link>
-            <Link href="/about" className="button button--ghost">
-              About me
-            </Link>
-          </div>
+      </div>
+      <div className="hero__visual">
+        <span className="studio-note">a few things from my desk</span>
+        <div className="artwork-backdrop" aria-hidden="true">
+          <span>MAKE<br />SOMETHING<br /><i>feel.</i></span>
         </div>
-      </motion.div>
-
-      <motion.div
-        className="hero__visual"
-        aria-hidden="true"
-        initial={reducedMotion ? false : { opacity: 0, scale: 0.94 }}
-        animate={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
-        transition={{ duration: 1, delay: 0.12 }}
-      >
-        <div className="signal-orbit signal-orbit--outer" />
-        <div className="signal-orbit signal-orbit--inner" />
-        <div className="signal-pulse signal-pulse--one" />
-        <div className="signal-pulse signal-pulse--two" />
-
-        <div className="signal-card signal-card--a">
-          <span className="signal-card__dot" />
-          <span>ART</span><strong>01</strong>
+        {artworks.map((project, index) => (
+          <Link
+            href={`/work/${project.slug}`}
+            className={`desk-art desk-art--${index + 1}`}
+            key={project.id}
+          >
+            <div className="desk-art__image">
+              <Image
+                src={publicMediaUrl(project.cover_path)!}
+                alt={project.title}
+                fill
+                sizes="(max-width: 600px) 65vw, 320px"
+                priority
+              />
+            </div>
+            <span>{project.title}<ArrowUpRight size={13} /></span>
+          </Link>
+        ))}
+        <span className="desk-stamp" aria-hidden="true">
+          Made with<br /><b>curiosity.</b><span>✳</span>
+        </span>
+      </div>
+      <div className="hero__intro">
+        <p className="hero__lede">
+          I&apos;m Medianto Susilo. I build visual experiences across art,
+          UI/UX, games, web, and the random ideas that feel interesting enough
+          to become real.
+        </p>
+        <div className="hero__actions">
+          <Link href="/work" className="button button--primary">
+            Explore work <ArrowDownRight size={19} />
+          </Link>
+          <Link href="/about" className="text-link">
+            About me <ArrowUpRight size={17} />
+          </Link>
         </div>
-        <div className="signal-card signal-card--b">
-          <span className="signal-card__dot" />
-          <span>UI/UX</span><strong>02</strong>
-        </div>
-        <div className="signal-card signal-card--c">
-          <span className="signal-card__dot" />
-          <span>CODE</span><strong>03</strong>
-        </div>
-
-        <div className="signal-core">
-          <div className="signal-core__ring" />
-          <span>IDEA</span>
-        </div>
-
-        <div className="signal-line signal-line--one" />
-        <div className="signal-line signal-line--two" />
-        <div className="signal-dot signal-dot--two" />
-        <div className="signal-dot signal-dot--three" />
-      </motion.div>
+      </div>
+      <div className="hero__bottomline">
+        <span>Software / Games / UI & UX / Artwork</span>
+        <a href="#selected-work">A look inside <ArrowDownRight size={17} /></a>
+      </div>
     </section>
   );
 }

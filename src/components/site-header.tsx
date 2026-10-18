@@ -39,8 +39,12 @@ export function SiteHeader() {
           className="brand"
           aria-label={isAdmin ? "Admin home" : "Medi home"}
         >
-          <BrandMark />
-          {!isAdmin && <span className="brand__name">MEDISSL</span>}
+          {isAdmin ? <BrandMark /> : (
+            <>
+              <span className="brand__wordmark">medissl<span>✳</span></span>
+              <span className="brand__caption">A creative practice<br />in code & image</span>
+            </>
+          )}
         </Link>
 
         <nav className="nav" aria-label="Primary navigation">
@@ -59,6 +63,7 @@ export function SiteHeader() {
                   key={link.href}
                   href={link.href}
                   className={active ? "nav__link is-active" : "nav__link"}
+                  aria-current={active ? "page" : undefined}
                   target={link.external ? "_blank" : undefined}
                   rel={link.external ? "noreferrer" : undefined}
                 >
@@ -67,6 +72,11 @@ export function SiteHeader() {
                 </Link>
               );
             })
+          )}
+          {!isAdmin && (
+            <Link href="mailto:mediantozeng@gmail.com" className="nav__contact">
+              Let&apos;s talk <ArrowUpRight size={15} />
+            </Link>
           )}
         </nav>
       </div>

@@ -45,7 +45,6 @@ export function DisciplineShowcase() {
           className="discipline-card"
           initial={reducedMotion ? false : { opacity: 0, y: 28 }}
           whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-          whileHover={reducedMotion ? undefined : { y: -8 }}
           viewport={{ once: true, margin: "-70px" }}
           transition={{
             duration: 0.5,

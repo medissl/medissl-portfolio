@@ -4,23 +4,25 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Pause, Play } from "lucide-react";
 import { publicMediaUrl } from "@/lib/supabase";
 import type { Project } from "@/lib/types";
 
 export function FeaturedCarousel({ projects }: { projects: Project[] }) {
   const reducedMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [interacting, setInteracting] = useState(false);
 
   useEffect(() => {
-    if (projects.length < 2 || reducedMotion) return;
+    if (projects.length < 2 || reducedMotion || paused || interacting) return;
 
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % projects.length);
     }, 5200);
 
     return () => window.clearInterval(timer);
-  }, [projects.length, reducedMotion]);
+  }, [projects.length, reducedMotion, paused, interacting]);
 
   if (!projects.length) {
     return (
@@ -47,7 +49,15 @@ export function FeaturedCarousel({ projects }: { projects: Project[] }) {
   }
 
   return (
-    <div className="featured-carousel">
+    <div
+      className="featured-carousel"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Featured work"
+      onMouseEnter={() => setInteracting(true)}
+      onMouseLeave={() => setInteracting(false)}
+      onFocusCapture={() => setPaused(true)}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           className="featured-carousel__stage"
@@ -64,7 +74,7 @@ export function FeaturedCarousel({ projects }: { projects: Project[] }) {
                 alt={project.title}
                 fill
                 sizes="(max-width: 900px) 100vw, 70vw"
-                className="project-cover__image"
+                className={`project-cover__image${project.tools.includes("Aseprite") ? " pixel-art" : ""}`}
                 priority={index === 0}
               />
             ) : (
@@ -92,6 +102,9 @@ export function FeaturedCarousel({ projects }: { projects: Project[] }) {
       </AnimatePresence>
 
       <div className="featured-carousel__controls">
+        <span className="carousel-counter">
+          {String(index + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}
+        </span>
         <div className="carousel-dots" aria-label="Carousel position">
           {projects.map((item, itemIndex) => (
             <button
@@ -100,12 +113,22 @@ export function FeaturedCarousel({ projects }: { projects: Project[] }) {
               className={itemIndex === index ? "carousel-dot is-active" : "carousel-dot"}
               onClick={() => setIndex(itemIndex)}
               aria-label={`Show ${item.title}`}
+              aria-pressed={itemIndex === index}
             />
           ))}
         </div>
 
         {projects.length > 1 && (
           <div className="carousel-arrows">
+            {!reducedMotion && (
+              <button
+                type="button"
+                onClick={() => setPaused(!paused)}
+                aria-label={paused ? "Play slideshow" : "Pause slideshow"}
+              >
+                {paused ? <Play size={16} /> : <Pause size={16} />}
+              </button>
+            )}
             <button type="button" onClick={() => move(-1)} aria-label="Previous project">
               <ArrowLeft size={18} />
             </button>

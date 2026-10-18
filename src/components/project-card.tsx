@@ -16,7 +16,7 @@ export function ProjectCard({ project }: { project: Project }) {
             alt={project.title}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="project-card__image"
+            className={`project-card__image${project.tools.includes("Aseprite") ? " pixel-art" : ""}`}
           />
         ) : (
           <div className="project-card__placeholder" aria-hidden="true">

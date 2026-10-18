@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { AmbientBackground } from "@/components/ambient-bg";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SiteShell } from "@/components/site-shell";
 import "./globals.css";
 import "./admin.css";
+import "./public.css";
 
 export const metadata: Metadata = {
   title: {
@@ -26,14 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
-        <AmbientBackground />
-        <div className="site-frame">
-          <SiteHeader />
-          <main>{children}</main>
-          <SiteFooter />
-        </div>
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );

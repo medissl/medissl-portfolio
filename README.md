@@ -6,7 +6,9 @@ A live creative portfolio and lightweight CMS for my art, UI/UX, interactive med
 
 ## Preview
 
-![Animated preview of the portfolio homepage](docs/screenshots/main-page-preview.gif)
+![The redesigned sketchbook portfolio](docs/screenshots/redesign-desktop.png)
+
+The public portfolio uses a warm editorial sketchbook direction. See [DESIGN.md](DESIGN.md) for references and art direction, and [the verification record](docs/redesign-verification.md) for testing and remaining limits. The screenshots below document the previous public presentation and the preserved CMS.
 
 <table>
   <tr>
@@ -35,10 +37,10 @@ The result is one project serving two purposes: a personal creative portfolio an
 
 ### Public portfolio
 
-- Dark / electric-blue visual system
-- Animated multilingual hero headline
-- Interactive hero graphic and motion effects
-- Featured-work carousel
+- Paper, ink, and vermilion visual system
+- Multilingual hero headline with explicit language controls
+- Artwork-led hero collage using the current published collection
+- Featured-work carousel with pause/play and keyboard interaction support
 - Art and project archive with category filters
 - Dynamic project detail pages
 - Finished-work, gallery, and process-image sections
