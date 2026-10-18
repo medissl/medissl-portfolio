@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { journeyAt } from '../../src/components/mine/journey.ts';
+import { journeyAt, nextStation, advanceSceneryTile } from '../../src/components/mine/journey.ts';
 assert.equal(journeyAt(0).cameraZ, 7);
 assert.equal(journeyAt(1.2).phase, 'breaking');
 assert.equal(journeyAt(2.2).phase, 'travelling');
@@ -14,3 +14,18 @@ for (let t = 0; t <= 5; t += 0.01) {
   previous = state.cameraZ;
 }
 console.log('Journey timing, clearance, monotonic movement and final stop passed.');
+for (const count of [1, 2, 10, 13]) {
+  let station = 0, tiles = [0, -48];
+  const visited = [];
+  for (let i = 0; i < count * 3; i++) {
+    visited.push(station);
+    station = nextStation(station, count);
+    tiles = tiles.map(advanceSceneryTile);
+    assert.equal(Math.abs(tiles[0] - tiles[1]), 48, 'tiles remain adjacent');
+    assert.ok(tiles.every(z => z >= -48 && z <= 24), 'world coordinates stay bounded');
+  }
+  assert.equal(new Set(visited).size, count, 'every project is reachable');
+  assert.equal(station, 0, 'final station loops back to the first');
+}
+assert.throws(() => nextStation(0, 0));
+console.log('All-project progression, repeated loops and bounded scenery passed.');

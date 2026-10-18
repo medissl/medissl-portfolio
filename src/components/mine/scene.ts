@@ -1,13 +1,14 @@
 import * as THREE from "three";
 import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
-import { mineProjects } from "./projects";
-import { journeyAt } from "./journey";
+import { mineProjects, type MineProject } from "./projects";
+import { journeyAt, nextStation, advanceSceneryTile } from "./journey";
 
 export type MineEngine = { advance: () => void; skip: () => void; jump: (index: number) => void; pause: (value: boolean) => void; dispose: () => void };
 type Events = { station: (index: number) => void; phase: (phase: string) => void; inspect: () => void; failed: () => void };
 const smooth = (v: number) => { const t = THREE.MathUtils.clamp(v, 0, 1); return t * t * (3 - 2 * t); };
 
-export function createMine(host: HTMLElement, events: Events, reduced: boolean): MineEngine {
+export function createMine(host: HTMLElement, events: Events, reduced: boolean, projects: MineProject[] = mineProjects, initialStation = 0): MineEngine {
+  if (!projects.length) throw new Error("The mine needs at least one project.");
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#182327");
   scene.fog = new THREE.FogExp2("#253338", 0.026);
@@ -172,15 +173,30 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean):
     const list = batches.get(object.material) ?? []; list.push(geometry); batches.set(object.material, list); scene.remove(object);
   }
   batches.forEach((geometries, material) => { const combined = mergeGeometries(geometries); if (combined) scene.add(new THREE.Mesh(combined, material)); geometries.forEach(g => g.dispose()); });
-  const walls: { group: THREE.Group; chunks: THREE.Mesh[]; origins: THREE.Vector3[]; board: THREE.Group; cracks: THREE.LineSegments }[] = [];
-  const clickTargets: THREE.Object3D[] = [];
-  function label(text: string, subtitle: string) {
-    const c = document.createElement("canvas"); c.width = 1024; c.height = 240; const ctx = c.getContext("2d")!;
+  const practicalLights = scene.children.filter((object): object is THREE.PointLight => object instanceof THREE.PointLight);
+  const lampSources = practicalLights.map(light => ({ position: light.position.clone(), color: light.color.clone(), intensity: light.intensity, distance: light.distance }));
+  const environment = new THREE.Group();
+  for (const object of [...scene.children]) if (object instanceof THREE.Mesh) environment.add(object);
+  scene.add(environment);
+  const aheadEnvironment = environment.clone(true); aheadEnvironment.position.z = -48; scene.add(aheadEnvironment);
+  const scenery = [environment, aheadEnvironment];
+  type Wall = { group: THREE.Group; chunks: THREE.Mesh[]; origins: THREE.Vector3[]; board: THREE.Group; cracks: THREE.LineSegments; picture: THREE.Mesh; frame: THREE.Mesh; backing: THREE.Mesh; plaque: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>; imageMaterial: THREE.MeshBasicMaterial; placeholder: THREE.Texture; revision: number; coverUrl: string | null };
+  const walls: Wall[] = [];
+  function writeLabel(material: THREE.MeshBasicMaterial, text: string, subtitle: string) {
+    const c = material.map!.image as HTMLCanvasElement; const ctx = c.getContext("2d")!;
     ctx.fillStyle = "#282d29"; ctx.fillRect(0, 0, 1024, 240); ctx.strokeStyle = "#b49c71"; ctx.lineWidth = 3; ctx.strokeRect(14, 14, 996, 212);
-    ctx.fillStyle = "#ede3cb"; ctx.textAlign = "center"; ctx.font = "64px Georgia"; ctx.fillText(text, 512, 104); ctx.font = "24px monospace"; ctx.fillStyle = "#c5b692"; ctx.fillText(subtitle, 512, 171);
-    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex); return new THREE.MeshBasicMaterial({ map: tex });
+    ctx.fillStyle = "#ede3cb"; ctx.textAlign = "center";
+    let size = 62; ctx.font = `600 ${size}px Arial`;
+    while (ctx.measureText(text).width > 940 && size > 26) ctx.font = `600 ${--size}px Arial`;
+    ctx.fillText(text, 512, 108); ctx.font = "24px Arial"; ctx.fillStyle = "#c5b692"; ctx.fillText(subtitle, 512, 171);
+    material.map!.needsUpdate = true;
   }
-  mineProjects.forEach((project, index) => {
+  function label(text: string, subtitle: string) {
+    const c = document.createElement("canvas"); c.width = 1024; c.height = 240;
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex);
+    const material = new THREE.MeshBasicMaterial({ map: tex }); writeLabel(material, text, subtitle); return material;
+  }
+  for (let index = 0; index < 2; index++) {
     const z = -5 - index * 24; const group = new THREE.Group(); group.position.z = z; scene.add(group);
     const chunks: THREE.Mesh[] = []; const origins: THREE.Vector3[] = []; const edges: number[] = [];
     // Authored pre-fracture: offset triangulated stone cells, animated without a physics engine.
@@ -202,16 +218,57 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean):
     const cg = new THREE.BufferGeometry(); cg.setAttribute("position", new THREE.Float32BufferAttribute(edges, 3));
     const cracks = new THREE.LineSegments(cg, new THREE.LineBasicMaterial({ color: "#efc48d", transparent: true, opacity: 0 })); group.add(cracks);
     const board = new THREE.Group(); board.position.set(0, 2.95, 0.8); group.add(board);
-    box(0, 0, -0.08, index ? 2.05 : 4.45, 2.8, 0.2, wood, board);
-    box(0, 0, 0.035, index ? 1.75 : 4.12, 2.48, 0.08, iron, board);
-    const imageMat = new THREE.MeshBasicMaterial({ color: "#b7b1a0" });
-    const picture = mesh(new THREE.PlaneGeometry(index ? 1.25 : 3.95, 2.3), imageMat, 0, 0, 0.1, board);
-    const loader = new THREE.TextureLoader(); loader.load(project.image, tex => { if (disposed) { tex.dispose(); return; } tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex); imageMat.map = tex; imageMat.color.set("white"); imageMat.needsUpdate = true; });
-    mesh(new THREE.PlaneGeometry(3.2, 0.75), label(project.title, `${project.category.toUpperCase()}  /  INSPECT`), 0, -1.85, 0.15, board);
-    clickTargets.push(picture);
-    for (const x of [-2.1, 2.1]) for (const y of [-1.2, 1.2]) mesh(new THREE.SphereGeometry(0.045, 6, 4), brass, x, y, 0.07, board);
-    walls.push({ group, chunks, origins, board, cracks });
-  });
+    const backing = box(0, 0, -0.08, 4.45, 2.8, 0.2, wood, board);
+    const frame = box(0, 0, 0.035, 4.12, 2.48, 0.08, iron, board);
+    const imageMaterial = label("", "");
+    const picture = mesh(new THREE.PlaneGeometry(1, 1), imageMaterial, 0, 0, 0.1, board);
+    const plaque = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.75), label("", "")); plaque.position.set(0, -1.85, 0.15); board.add(plaque);
+    walls.push({ group, chunks, origins, board, cracks, picture, frame, backing, plaque, imageMaterial, placeholder: imageMaterial.map!, revision: 0, coverUrl: null });
+  }
+  // Four decoded covers at most; only the current/next station are requested.
+  // Revision checks keep a late image response from replacing a newer selection.
+  const coverCache = new Map<string, THREE.Texture>();
+  const pendingCovers = new Map<string, Promise<THREE.Texture>>();
+  function loadCover(url: string): Promise<THREE.Texture> {
+    const existing = coverCache.get(url);
+    if (existing) { coverCache.delete(url); coverCache.set(url, existing); return Promise.resolve(existing); }
+    const pending = pendingCovers.get(url); if (pending) return pending;
+    const promise = new Promise<THREE.Texture>((resolve, reject) => {
+      new THREE.TextureLoader().load(url, texture => {
+        pendingCovers.delete(url); texture.colorSpace = THREE.SRGBColorSpace;
+        if (disposed) { texture.dispose(); resolve(texture); return; }
+        coverCache.set(url, texture);
+        while (coverCache.size > 4) {
+          const oldest = [...coverCache.keys()].find(key => !walls.some(wall => wall.coverUrl === key));
+          if (!oldest) break; coverCache.get(oldest)!.dispose(); coverCache.delete(oldest);
+        }
+        resolve(texture);
+      }, undefined, error => { pendingCovers.delete(url); reject(error); });
+    });
+    pendingCovers.set(url, promise); return promise;
+  }
+  function sizeDisplay(wall: Wall, aspect: number) {
+    const width = Math.min(3.95, 2.3 * aspect), height = Math.min(2.3, 3.95 / aspect);
+    wall.picture.scale.set(width, height, 1);
+    wall.backing.scale.x = width + 0.5; wall.frame.scale.x = width + 0.2;
+  }
+  function bindWall(wall: Wall, projectIndex: number, z: number) {
+    const project = projects[projectIndex], revision = ++wall.revision;
+    wall.group.position.z = z; wall.group.visible = true; wall.board.visible = true; wall.board.scale.setScalar(1);
+    wall.chunks.forEach((chunk, i) => { chunk.position.copy(wall.origins[i]); chunk.rotation.set(0, 0, 0); });
+    wall.cracks.visible = true; (wall.cracks.material as THREE.LineBasicMaterial).opacity = 0; wall.cracks.geometry.setDrawRange(0, 0);
+    wall.imageMaterial.map = wall.placeholder; writeLabel(wall.imageMaterial, project.title, project.category);
+    writeLabel(wall.plaque.material, project.title, project.category);
+    sizeDisplay(wall, project.portrait ? 0.6 : 1.72);
+    wall.coverUrl = project.image;
+    if (project.image) void loadCover(project.image).then(texture => {
+      if (disposed || wall.revision !== revision) return;
+      wall.imageMaterial.map = texture; wall.imageMaterial.needsUpdate = true;
+      const image = texture.image as HTMLImageElement;
+      sizeDisplay(wall, image.width / image.height);
+    }).catch(() => { /* The named project plaque remains usable when a cover cannot load. */ });
+    wall.imageMaterial.needsUpdate = true;
+  }
   // A small maker's plaque is physically mounted on the cart.
   const cart = new THREE.Group(); scene.add(cart);
   box(0, -0.9, -0.3, 2.1, 0.1, 2, iron, cart);
@@ -255,21 +312,32 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean):
   let station = 0, elapsed = 0, moving = false, paused = false, time = 0, last = performance.now(), frame = 0;
   let phase = "", pointerX = 0, pointerY = 0, cameraZ = 7;
   let slowFrames = 0, qualityReduced = false;
-  const setPhase = (s: string) => { if (phase !== s) { phase = s; events.phase(s); } };
-  const finish = () => { moving = false; station = 1; cameraZ = -17; walls[0].group.visible = false; dustMat.opacity = 0.35; dustMat.size = 0.045; events.station(1); setPhase("ready"); };
-  const jump = (index: number) => {
-    moving = false; elapsed = 0; station = index === 1 ? 1 : 0; cameraZ = station ? -17 : 7;
+  const setPhase = (s: string) => { if (phase !== s) { phase = s; host.dataset.phase = s; events.phase(s); } };
+  const finish = () => {
+    moving = false; station = nextStation(station, projects.length); cameraZ = 7;
+    // Rebase the arriving chamber and camera together: identical framing with no
+    // growing world coordinates. Recycle the consumed wall behind the next wall.
+    scenery.forEach(tile => { tile.position.z = advanceSceneryTile(tile.position.z); });
+    const consumed = walls.shift()!; walls.push(consumed);
+    walls[0].group.position.z = -5;
+    bindWall(consumed, nextStation(station, projects.length), -29);
     dustMat.opacity = 0.35; dustMat.size = 0.045;
-    walls[0].group.visible = station === 0;
-    walls.forEach(w => { w.board.visible = true; w.board.scale.setScalar(1); w.cracks.visible = true; w.chunks.forEach((c, i) => { c.position.copy(w.origins[i]); c.rotation.set(0, 0, 0); }); (w.cracks.material as THREE.LineBasicMaterial).opacity = 0; });
     events.station(station); setPhase("ready");
   };
-  const advance = () => { if (moving || station === 1 || paused) return; if (reduced) { finish(); return; } elapsed = 0; moving = true; setPhase("drilling"); };
+  const jump = (index: number) => {
+    if (!Number.isInteger(index) || index < 0 || index >= projects.length) return;
+    moving = false; elapsed = 0; station = index; cameraZ = 7;
+    scenery[0].position.z = index % 2 ? 24 : 0; scenery[1].position.z = index % 2 ? -24 : -48;
+    dustMat.opacity = 0.35; dustMat.size = 0.045;
+    bindWall(walls[0], station, -5); bindWall(walls[1], nextStation(station, projects.length), -29);
+    events.station(station); setPhase("ready");
+  };
+  const advance = () => { if (moving || paused) return; if (reduced) { finish(); return; } elapsed = 0; moving = true; setPhase("drilling"); };
   const resize = () => { const w = host.clientWidth, h = host.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.fov = w < 650 ? 72 : 56; camera.updateProjectionMatrix(); };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const pointer = (e: PointerEvent) => { if (e.pointerType === "mouse") { pointerX = (e.clientX / host.clientWidth - 0.5) * 0.07; pointerY = (e.clientY / host.clientHeight - 0.5) * 0.025; } };
   const raycaster = new THREE.Raycaster();
-  const click = (e: MouseEvent) => { if (moving || paused) return; const rect = renderer.domElement.getBoundingClientRect(); raycaster.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera); if (raycaster.intersectObject(clickTargets[station]).length) events.inspect(); };
+  const click = (e: MouseEvent) => { if (moving || paused) return; const rect = renderer.domElement.getBoundingClientRect(); raycaster.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera); if (raycaster.intersectObject(walls[0].board, true).length) events.inspect(); };
   const lost = (e: Event) => { e.preventDefault(); events.failed(); };
   host.addEventListener("pointermove", pointer); renderer.domElement.addEventListener("click", click); renderer.domElement.addEventListener("webglcontextlost", lost);
   function render(now: number) {
@@ -301,16 +369,23 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean):
     camera.position.set(vibration, 2.25 + vibration, cameraZ);
     camera.rotation.set(0.045 + (reduced ? 0 : -pointerY), reduced ? 0 : -pointerX, vibration * 0.1);
     cart.position.set(0, 1.45 + vibration * 0.4, cameraZ); cart.rotation.z = vibration * 0.3;
+    scenery.forEach(tile => { tile.visible = tile.position.z + 12 > cameraZ - 42 && tile.position.z - 43 < cameraZ + 5; });
+    // Keep the original light budget while reusing both chambers. A second tile
+    // does not double the shader's point-light count.
+    const nearestLamps = scenery.flatMap(tile => lampSources.map(source => ({ source, z: source.position.z + tile.position.z }))).sort((a, b) => Math.abs(a.z - cameraZ) - Math.abs(b.z - cameraZ));
+    practicalLights.forEach((light, i) => { const lamp = nearestLamps[i]; light.position.copy(lamp.source.position); light.position.z = lamp.z; light.color.copy(lamp.source.color); light.intensity = lamp.source.intensity; light.distance = lamp.source.distance; });
     if (!reduced) dust.position.y = Math.sin(time * 0.2) * 0.2;
     renderer.render(scene, camera);
     host.dataset.drawCalls = String(renderer.info.render.calls); host.dataset.triangles = String(renderer.info.render.triangles); host.dataset.quality = qualityReduced ? "adaptive" : "full";
+    host.dataset.station = projects[station].id; host.dataset.wallCount = String(walls.length); host.dataset.tileCount = String(scenery.length); host.dataset.coverCache = String(coverCache.size); host.dataset.textures = String(renderer.info.memory.textures);
   }
-  frame = requestAnimationFrame(render); setPhase("ready");
+  jump(initialStation); frame = requestAnimationFrame(render);
   return { advance, skip: () => { if (moving) finish(); }, jump, pause: v => { paused = v; }, dispose: () => {
     disposed = true; cancelAnimationFrame(frame); observer.disconnect(); host.removeEventListener("pointermove", pointer); renderer.domElement.removeEventListener("click", click); renderer.domElement.removeEventListener("webglcontextlost", lost);
     const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>();
     scene.traverse(o => { if (o instanceof THREE.Mesh || o instanceof THREE.Points || o instanceof THREE.LineSegments) { geometries.add(o.geometry); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => materials.add(m)); } });
-    geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); renderer.dispose(); renderer.domElement.remove();
+    geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); coverCache.forEach(t => t.dispose()); coverCache.clear(); pendingCovers.clear(); renderer.dispose(); renderer.domElement.remove();
   } };
 }
+
 

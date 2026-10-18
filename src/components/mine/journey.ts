@@ -7,3 +7,14 @@ export function journeyAt(seconds: number) {
     complete: elapsed >= 4.5,
   };
 }
+
+export function nextStation(index: number, count: number) {
+  if (!Number.isInteger(count) || count < 1) throw new Error("The mine needs at least one project.");
+  return (index + 1) % count;
+}
+
+// Two reusable 48-unit scenery tiles cover an unlimited number of 24-unit trips.
+export function advanceSceneryTile(z: number) {
+  const shifted = z + 24;
+  return shifted >= 48 ? shifted - 96 : shifted;
+}
