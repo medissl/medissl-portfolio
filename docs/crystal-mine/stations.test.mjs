@@ -11,14 +11,13 @@ const { outputText } = ts.transpileModule(source, {
 });
 const moduleExports = {};
 new Function('require', 'exports', outputText)(createRequire(sourceUrl), moduleExports);
-const { mineProjects, repositoryProjects, artworkProjects } = moduleExports;
-assert.deepEqual(mineProjects.map(p => p.id), ['sakiko', 'jellink']);
+const { repositoryProjects, artworkProjects } = moduleExports;
+assert.deepEqual(repositoryProjects.slice(0, 2).map(p => p.id), ['sakiko', 'jellink']);
 assert.equal(repositoryProjects.length, 10, 'preserve the prepared catalog');
-for (const station of mineProjects) {
-  for (const field of ['image', 'gallery', 'repository', 'link']) {
-    assert.ok(station[field], `${station.id} requires ${field}`);
-  }
-  for (const image of [station.image, station.gallery]) {
+assert.equal(new Set(repositoryProjects.map(p => p.id)).size, repositoryProjects.length);
+for (const station of repositoryProjects) {
+  assert.ok(station.id && station.title && station.repository);
+  for (const image of [station.image, ...station.media.map(m => m.src)].filter(Boolean)) {
     assert.ok(existsSync(new URL(`../../public${image}`, import.meta.url)), image);
   }
 }
@@ -32,3 +31,35 @@ assert.equal(repositoryProjects.filter(p => !p.image).length, 4, 'missing media 
 assert.equal(repositoryProjects[0].image, '/mine/sakiko-menu.webp');
 assert.ok(repositoryProjects[0].media.some(m => m.src.endsWith('sakiko-classroom-day.webp')));
 console.log('Station contract, nullable media, complete artwork and preserved catalog passed.');
+
+// A healthy empty feed must honor unpublishing, rather than resurrecting the snapshot.
+const loaderUrl = new URL('../../src/lib/mine-projects.ts', import.meta.url);
+let response = { data: [], error: null }, unavailable = false;
+const query = {};
+for (const method of ['select', 'eq', 'neq', 'order']) query[method] = () => query;
+query.abortSignal = async () => { if (unavailable) throw new Error('offline'); return response; };
+const loaderExports = {};
+const loaderCode = ts.transpileModule(readFileSync(loaderUrl, 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true },
+}).outputText;
+const loaderRequire = name => {
+  if (name === '@/components/mine/projects') return moduleExports;
+  if (name === '@/components/mine/published-art.json') return snapshot;
+  if (name === '@/lib/supabase') return { getServerSupabase: () => ({ from: () => query }), publicMediaUrl: path => path ? `/media/${path}` : null };
+  return createRequire(loaderUrl)(name);
+};
+new Function('require', 'exports', loaderCode)(loaderRequire, loaderExports);
+let catalog = await loaderExports.getMineProjects();
+assert.equal(catalog.savedArtwork, false);
+assert.equal(catalog.projects.length, 10, 'healthy empty feed does not restore old artwork');
+response = { data: snapshot, error: null };
+catalog = await loaderExports.getMineProjects();
+assert.equal(catalog.projects.length, 13);
+assert.equal(catalog.projects.flatMap(p => p.media).filter(m => m.section === 'process').length, 2);
+response = { data: null, error: { message: 'unavailable' } };
+catalog = await loaderExports.getMineProjects();
+assert.equal(catalog.savedArtwork, true);
+assert.equal(catalog.projects.length, 13);
+unavailable = true;
+assert.equal((await loaderExports.getMineProjects()).savedArtwork, true, 'thrown connection failure also degrades safely');
+console.log('Live, empty, failed and thrown artwork-feed cases passed.');

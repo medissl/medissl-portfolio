@@ -1,0 +1,145 @@
+[
+  {
+    "coverCache": "3",
+    "drawCalls": "156",
+    "phase": "ready",
+    "quality": "full",
+    "station": "jellink",
+    "textures": "10",
+    "tileCount": "2",
+    "triangles": "272754",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "144",
+    "phase": "ready",
+    "quality": "full",
+    "station": "maucuan",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "138906",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "156",
+    "phase": "ready",
+    "quality": "full",
+    "station": "shoot",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "272754",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "144",
+    "phase": "ready",
+    "quality": "full",
+    "station": "wildfeast",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "138906",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "155",
+    "phase": "ready",
+    "quality": "full",
+    "station": "rundori",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "272752",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "142",
+    "phase": "ready",
+    "quality": "full",
+    "station": "lantern-lot",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "138902",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "154",
+    "phase": "ready",
+    "quality": "full",
+    "station": "bncc",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "272750",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "142",
+    "phase": "ready",
+    "quality": "full",
+    "station": "jakarta-flood",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "138902",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "155",
+    "phase": "ready",
+    "quality": "full",
+    "station": "portfolio",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "272752",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "144",
+    "phase": "ready",
+    "quality": "full",
+    "station": "ab96a4ba-d03f-4010-9018-286ce38a6ede",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "138906",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "156",
+    "phase": "ready",
+    "quality": "full",
+    "station": "5bc8345e-cafc-4ad2-9d03-1681928dd8dd",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "272754",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "144",
+    "phase": "ready",
+    "quality": "full",
+    "station": "8be03496-b30e-4eb1-a049-556670796573",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "138906",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "drawCalls": "156",
+    "phase": "ready",
+    "quality": "full",
+    "station": "sakiko",
+    "textures": "11",
+    "tileCount": "2",
+    "triangles": "272754",
+    "wallCount": "2"
+  }
+]

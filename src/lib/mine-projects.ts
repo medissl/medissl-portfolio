@@ -16,4 +16,3 @@ export const getMineProjects = cache(async () => {
     return { projects: [...repositoryProjects, ...artworkProjects(snapshot as PublishedMineRecord[], publicMediaUrl)], savedArtwork: true };
   }
 });
-

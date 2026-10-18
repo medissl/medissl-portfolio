@@ -1,13 +1,13 @@
 import * as THREE from "three";
 import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
-import { mineProjects, type MineProject } from "./projects";
+import type { MineProject } from "./projects";
 import { journeyAt, nextStation, advanceSceneryTile } from "./journey";
 
 export type MineEngine = { advance: () => void; skip: () => void; jump: (index: number) => void; pause: (value: boolean) => void; dispose: () => void };
 type Events = { station: (index: number) => void; phase: (phase: string) => void; inspect: () => void; failed: () => void };
 const smooth = (v: number) => { const t = THREE.MathUtils.clamp(v, 0, 1); return t * t * (3 - 2 * t); };
 
-export function createMine(host: HTMLElement, events: Events, reduced: boolean, projects: MineProject[] = mineProjects, initialStation = 0): MineEngine {
+export function createMine(host: HTMLElement, events: Events, reduced: boolean, projects: MineProject[], initialStation = 0): MineEngine {
   if (!projects.length) throw new Error("The mine needs at least one project.");
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#182327");
@@ -184,15 +184,15 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   const walls: Wall[] = [];
   function writeLabel(material: THREE.MeshBasicMaterial, text: string, subtitle: string) {
     const c = material.map!.image as HTMLCanvasElement; const ctx = c.getContext("2d")!;
-    ctx.fillStyle = "#282d29"; ctx.fillRect(0, 0, 1024, 240); ctx.strokeStyle = "#b49c71"; ctx.lineWidth = 3; ctx.strokeRect(14, 14, 996, 212);
+    ctx.fillStyle = "#282d29"; ctx.fillRect(0, 0, c.width, c.height); ctx.strokeStyle = "#b49c71"; ctx.lineWidth = 3; ctx.strokeRect(14, 14, c.width - 28, c.height - 28);
     ctx.fillStyle = "#ede3cb"; ctx.textAlign = "center";
-    let size = 62; ctx.font = `600 ${size}px Arial`;
+    let size = c.height > 240 ? 80 : 62; ctx.font = `600 ${size}px Arial`;
     while (ctx.measureText(text).width > 940 && size > 26) ctx.font = `600 ${--size}px Arial`;
-    ctx.fillText(text, 512, 108); ctx.font = "24px Arial"; ctx.fillStyle = "#c5b692"; ctx.fillText(subtitle, 512, 171);
+    ctx.fillText(text, 512, c.height * 0.46); ctx.font = `${c.height > 240 ? 32 : 24}px Arial`; ctx.fillStyle = "#c5b692"; ctx.fillText(subtitle, 512, c.height * 0.71);
     material.map!.needsUpdate = true;
   }
-  function label(text: string, subtitle: string) {
-    const c = document.createElement("canvas"); c.width = 1024; c.height = 240;
+  function label(text: string, subtitle: string, height = 240) {
+    const c = document.createElement("canvas"); c.width = 1024; c.height = height;
     const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex);
     const material = new THREE.MeshBasicMaterial({ map: tex }); writeLabel(material, text, subtitle); return material;
   }
@@ -220,7 +220,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const board = new THREE.Group(); board.position.set(0, 2.95, 0.8); group.add(board);
     const backing = box(0, 0, -0.08, 4.45, 2.8, 0.2, wood, board);
     const frame = box(0, 0, 0.035, 4.12, 2.48, 0.08, iron, board);
-    const imageMaterial = label("", "");
+    const imageMaterial = label("", "", 600);
     const picture = mesh(new THREE.PlaneGeometry(1, 1), imageMaterial, 0, 0, 0.1, board);
     const plaque = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.75), label("", "")); plaque.position.set(0, -1.85, 0.15); board.add(plaque);
     walls.push({ group, chunks, origins, board, cracks, picture, frame, backing, plaque, imageMaterial, placeholder: imageMaterial.map!, revision: 0, coverUrl: null });
@@ -259,6 +259,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     wall.cracks.visible = true; (wall.cracks.material as THREE.LineBasicMaterial).opacity = 0; wall.cracks.geometry.setDrawRange(0, 0);
     wall.imageMaterial.map = wall.placeholder; writeLabel(wall.imageMaterial, project.title, project.category);
     writeLabel(wall.plaque.material, project.title, project.category);
+    wall.plaque.visible = Boolean(project.image);
     sizeDisplay(wall, project.portrait ? 0.6 : 1.72);
     wall.coverUrl = project.image;
     if (project.image) void loadCover(project.image).then(texture => {
@@ -387,5 +388,3 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); coverCache.forEach(t => t.dispose()); coverCache.clear(); pendingCovers.clear(); renderer.dispose(); renderer.domElement.remove();
   } };
 }
-
-

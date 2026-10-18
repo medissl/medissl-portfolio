@@ -39,18 +39,3 @@ export function artworkProjects(records: PublishedMineRecord[], mediaUrl: (path:
     }),
   }));
 }
-
-type MineStation = MineProject & {
-  image: string; gallery: string; repository: string; link: string;
-};
-
-// The existing railway supports exactly these two stations. Keep the prepared
-// catalog separate until multi-station movement and nullable media are supported.
-export const mineProjects = (["sakiko", "jellink"] as const).map<MineStation>(id => {
-  const project = repositoryProjects.find(project => project.id === id);
-  if (!project?.image || !project.gallery || !project.repository || !project.link) {
-    throw new Error(`The ${id} prototype station needs its media and project links.`);
-  }
-  return { ...project, image: project.image, gallery: project.gallery,
-    repository: project.repository, link: project.link };
-});
