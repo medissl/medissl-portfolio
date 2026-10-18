@@ -1,0 +1,222 @@
+[
+  {
+    "id": "sakiko",
+    "title": "SAKIKO",
+    "category": "Game development",
+    "platform": "First-person horror · Windows",
+    "description": "A Japanese school after dark. Explore the empty halls, piece together the evidence, and find a way out.",
+    "tools": "Godot · GDScript · Windows",
+    "image": "/mine/sakiko-classroom-day.webp",
+    "gallery": "/mine/sakiko-corridor-night.webp",
+    "alt": "SAKIKO — actual project screenshot",
+    "features": [
+      "First-person exploration, object inspection and a journal.",
+      "Connected classroom routes and a hand-operated shutter.",
+      "Eight task checkpoints retain completed tasks when retrying."
+    ],
+    "repository": "https://github.com/medissl/SAKIKO",
+    "link": "https://github.com/medissl/SAKIKO/releases",
+    "action": "Windows releases",
+    "mineral": "Amber gallery",
+    "kind": "project",
+    "portrait": false
+  },
+  {
+    "id": "jellink",
+    "title": "Jellink",
+    "category": "Game development",
+    "platform": "Physics puzzle · Android + browser",
+    "description": "Drop, link, and pop soft-body jellies. A custom physics puzzle made for one-thumb play.",
+    "tools": "Java · Canvas 2D · JavaScript · Supabase",
+    "image": "/mine/jellink-game.webp",
+    "gallery": "/mine/jellink-menu.webp",
+    "alt": "Jellink — actual project screenshot",
+    "features": [
+      "Custom collision and pressure-driven jelly deformation.",
+      "Native Android drawing and audio; no WebView.",
+      "Offline solo, optional Versus and shared-jar Co-op."
+    ],
+    "repository": "https://github.com/medissl/jellink",
+    "link": "https://jellink.vercel.app",
+    "action": "Play Jellink",
+    "mineral": "Fluorite garden",
+    "kind": "project",
+    "portrait": true
+  },
+  {
+    "id": "maucuan",
+    "title": "MauCuan",
+    "category": "Software",
+    "platform": "Finance + habit app · Android",
+    "description": "An Indonesian money tracker with receipt scanning, savings goals, and Miko, a virtual companion.",
+    "tools": "React Native · Expo · Supabase",
+    "image": "/mine/maucuan-home.webp",
+    "gallery": "/mine/maucuan-miko.webp",
+    "alt": "MauCuan — actual project screenshot",
+    "features": [
+      "On-device receipt reading with review before saving.",
+      "Transactions, savings goals and an Android widget.",
+      "A virtual companion connected to daily habits."
+    ],
+    "repository": "https://github.com/medissl/MauCuan",
+    "link": "https://maucuan-finance.vercel.app",
+    "action": "Visit project",
+    "mineral": "Jade workshop",
+    "kind": "project",
+    "portrait": true
+  },
+  {
+    "id": "shoot",
+    "title": "Shoot a Boss",
+    "category": "Game development",
+    "platform": "Notebook-style FPS · Browser",
+    "description": "An office worker’s notebook dream becomes a first-person campaign against paperwork monsters.",
+    "tools": "React · TypeScript · Three.js · Rapier",
+    "image": "/mine/shoot-game.webp",
+    "gallery": null,
+    "alt": "Shoot a Boss — actual project screenshot",
+    "features": [
+      "Twelve-stage campaign and five map themes.",
+      "Weapons, cards, magic and persistent progression.",
+      "Hand-drawn visual language with desktop and touch controls."
+    ],
+    "repository": "https://github.com/medissl/shoot-a-boss",
+    "link": "https://shoot-a-boss.vercel.app",
+    "action": "Visit project",
+    "mineral": "Inkstone passage",
+    "kind": "project",
+    "portrait": false
+  },
+  {
+    "id": "wildfeast",
+    "title": "Wildfeast: Isles of Wonder",
+    "category": "Game development",
+    "platform": "Exploration + restaurant game · In development",
+    "description": "Explore a strange food world, bring ingredients home, and run a small restaurant.",
+    "tools": "Windows · Offline · Single-player",
+    "image": "/mine/wildfeast-outdoor.webp",
+    "gallery": "/mine/wildfeast-indoor.webp",
+    "alt": "Wildfeast: Isles of Wonder — actual project screenshot",
+    "features": [
+      "A loop connecting exploration, gathering, cooking and serving.",
+      "Playable fishing, farming, cooking and restaurant service.",
+      "Art, maps and creatures remain in development."
+    ],
+    "repository": "https://github.com/medissl/wildfeast-isles-of-wonder",
+    "link": null,
+    "action": "Visit project",
+    "mineral": "Mosslight hollow",
+    "kind": "project",
+    "portrait": false
+  },
+  {
+    "id": "rundori",
+    "title": "Rundori Receipt Web",
+    "category": "Software",
+    "platform": "Staff order management + private receipts",
+    "description": "Order management and private digital receipts for a shoe-care studio.",
+    "tools": "Next.js · TypeScript · Supabase · Cloudflare R2",
+    "image": "/mine/rundori-logo.webp",
+    "gallery": null,
+    "alt": "Rundori Receipt Web — actual project screenshot",
+    "features": [
+      "Staff allowlist and server-side authorization.",
+      "Expiring, revocable customer receipt links.",
+      "Private before/after photos delivered with signed URLs."
+    ],
+    "repository": "https://github.com/medissl/rundori-receipt-web",
+    "link": null,
+    "action": "Visit project",
+    "mineral": "Limestone vault",
+    "kind": "project",
+    "portrait": false
+  },
+  {
+    "id": "lantern-lot",
+    "title": "Lantern Lot",
+    "category": "Game development",
+    "platform": "Godot prototype",
+    "description": "An offline secondhand-shop game prototype. Inspect auction lots, bid, appraise objects, stock shelves and negotiate with customers.",
+    "tools": "Godot · GDScript",
+    "features": [
+      "One authored household-clearance fixture with auctions and shop sales.",
+      "Transactional local saves with recovery snapshots.",
+      "Early prototype; production art and Android export remain planned."
+    ],
+    "repository": "https://github.com/medissl/lantern-lot",
+    "mineral": "Lantern chamber",
+    "kind": "project",
+    "image": null,
+    "gallery": null,
+    "link": null,
+    "action": "Visit project",
+    "alt": "Lantern Lot",
+    "portrait": false
+  },
+  {
+    "id": "bncc",
+    "title": "BNCC Feedback",
+    "category": "Software",
+    "platform": "Internal feedback prototype",
+    "description": "A small CRUD application for collecting internal event feedback, with a feedback form and an administration panel.",
+    "tools": "Node.js · Express · HTML · JavaScript",
+    "features": [
+      "Create, read, update and delete feedback.",
+      "In-memory storage resets when the server restarts.",
+      "Prototype admin panel has no login."
+    ],
+    "repository": "https://github.com/medissl/bncc-feedback-system",
+    "mineral": "Copper workshop",
+    "kind": "project",
+    "image": null,
+    "gallery": null,
+    "link": null,
+    "action": "Visit project",
+    "alt": "BNCC Feedback",
+    "portrait": false
+  },
+  {
+    "id": "jakarta-flood",
+    "title": "Jakarta Flood AI Prediction",
+    "category": "Experiment",
+    "platform": "PKM / AOL team project",
+    "description": "An educational browser-based flood-risk prototype using rainfall, sea level and elevation inputs. Developed with Jason Nathaniel Prijatno and Marco Sukandar.",
+    "tools": "TensorFlow.js · JavaScript · Bootstrap · Chart.js",
+    "features": [
+      "Neural network trained in-browser using synthetic data.",
+      "Displays an estimated risk category and chart.",
+      "Educational demonstration, not a validated flood forecast."
+    ],
+    "repository": "https://github.com/medissl/Jakarta-Flood-AI-Prediction",
+    "mineral": "Rainstone observatory",
+    "kind": "project",
+    "image": null,
+    "gallery": null,
+    "link": null,
+    "action": "Visit project",
+    "alt": "Jakarta Flood AI Prediction",
+    "portrait": false
+  },
+  {
+    "id": "portfolio",
+    "title": "MEDISSL Portfolio",
+    "category": "Interactive media",
+    "platform": "The experience you are exploring",
+    "description": "A personal portfolio bringing software, games and artwork into a first-person crystal mine, with a direct project index and a Supabase-backed publishing workflow.",
+    "tools": "Next.js · TypeScript · Three.js · Supabase",
+    "features": [
+      "Keyboard and touch-controlled railway discoveries.",
+      "Project inspection and lightweight browsing.",
+      "Existing artwork publishing and admin workflows."
+    ],
+    "repository": "https://github.com/medissl/medissl-portfolio",
+    "mineral": "The maker’s station",
+    "kind": "project",
+    "image": null,
+    "gallery": null,
+    "link": null,
+    "action": "Visit project",
+    "alt": "MEDISSL Portfolio",
+    "portrait": false
+  }
+]

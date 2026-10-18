@@ -1,3 +1,8 @@
+> **Current checkpoint:** the exhibition/collection interaction model is rejected. Two new isolated interaction prototypes are in `docs/design-exploration/interaction-lab/`; read `REVIEW.md` there. Recommended for owner evaluation: `worlds.html` (normal scroll discovery, one link per project, native detail/Back continuity). `direct.html` is a separate alternative, not a mode. Preserve production application/backend; do not deploy, merge, publish or push. No final visual approval has been given.
+
+> **Latest feedback:** the owner rejects the green/black palette, plain catalogue styling and fixed sidebar. Current exploration: `docs/design-exploration/exhibition.html`, documented in `INTERACTIVE-MULTIMEDIA-DIRECTION.md` in that folder. Identity: creative developer focused on interactive multimedia. Keep project-first browsing, separate artwork, omit Mewdi, and preserve backend/admin. This local connected prototype is pending visual approval; do not deploy, publish or merge.
+
+> **Status: owner prefers concept A; visual refinement in progress, 18 October 2026.** The working-sketchbook direction below remains rejected and historical. The current local refinement is `docs/design-exploration/a-refined.html`; read `docs/design-exploration/A-REFINEMENT.md` for its direction and verified sources. Prioritize projects, keep artwork in a separate collection, and omit Mewdi from the showcase without deleting its record. Query actual repositories for project inventory: the profile README is outdated. Layout, navigation and wording may change; preserve application routes, project facts/media, backend, Supabase and CMS workflows. Do not publish, deploy or merge.
 # Medissl — the working sketchbook
 
 ## Direction

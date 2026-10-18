@@ -1,0 +1,298 @@
+import * as THREE from "three";
+import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
+import { mineProjects } from "./projects";
+import { journeyAt } from "./journey";
+
+export type MineEngine = { advance: () => void; skip: () => void; jump: (index: number) => void; pause: (value: boolean) => void; dispose: () => void };
+type Events = { station: (index: number) => void; phase: (phase: string) => void; inspect: () => void; failed: () => void };
+const smooth = (v: number) => { const t = THREE.MathUtils.clamp(v, 0, 1); return t * t * (3 - 2 * t); };
+
+export function createMine(host: HTMLElement, events: Events, reduced: boolean): MineEngine {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color("#182327");
+  scene.fog = new THREE.FogExp2("#253338", 0.026);
+  const camera = new THREE.PerspectiveCamera(56, 1, 0.08, 90);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.6));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.35;
+  host.appendChild(renderer.domElement);
+  renderer.domElement.setAttribute("aria-label", "Crystal cave seen from inside a drill minecart. Use the controls to inspect projects or advance.");
+  const textures: THREE.Texture[] = [];
+  let disposed = false;
+  let seed = 620;
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const mat = (color: string, roughness = 0.9, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness, metalness });
+  const stone = mat("#737976");
+  const darkStone = mat("#48544e");
+  const wood = mat("#60452d");
+  const iron = mat("#444f50", 0.38, 0.72);
+  const brass = mat("#b49158", 0.42, 0.65);
+  const moss = mat("#596e36");
+  const leafMat = new THREE.MeshStandardMaterial({ color: "#72894b", side: THREE.DoubleSide, roughness: 0.82 });
+  const lampMat = new THREE.MeshBasicMaterial({ color: "#ffe2a0" });
+  // Small original mineral texture. No external texture requests or asset licensing dependencies.
+  const textureCanvas = document.createElement("canvas"); textureCanvas.width = textureCanvas.height = 256;
+  const tc = textureCanvas.getContext("2d")!;
+  const pixels = tc.createImageData(256, 256);
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    const n = 100 + random() * 85;
+    pixels.data[i] = n; pixels.data[i + 1] = n; pixels.data[i + 2] = n; pixels.data[i + 3] = 255;
+  }
+  tc.putImageData(pixels, 0, 0);
+  tc.strokeStyle = "#555"; tc.lineWidth = 2;
+  for (let i = 0; i < 26; i++) { tc.beginPath(); tc.moveTo(random() * 256, 0); tc.bezierCurveTo(random() * 256, 80, random() * 256, 170, random() * 256, 256); tc.stroke(); }
+  const grain = new THREE.CanvasTexture(textureCanvas); grain.wrapS = grain.wrapT = THREE.RepeatWrapping; grain.repeat.set(2, 2); textures.push(grain);
+  stone.bumpMap = grain; stone.bumpScale = 0.12; darkStone.bumpMap = grain; darkStone.bumpScale = 0.16; wood.bumpMap = grain; wood.bumpScale = 0.06;
+  function mesh(g: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number, parent: THREE.Object3D = scene) {
+    const o = new THREE.Mesh(g, m); o.position.set(x, y, z); parent.add(o); return o;
+  }
+  const cube = new THREE.BoxGeometry(1, 1, 1);
+  function box(x: number, y: number, z: number, sx: number, sy: number, sz: number, m: THREE.Material, parent: THREE.Object3D = scene) {
+    const o = mesh(cube, m, x, y, z, parent); o.scale.set(sx, sy, sz); return o;
+  }
+  const rockGeometry = mergeVertices(new THREE.IcosahedronGeometry(1, 4));
+  const p = rockGeometry.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const d = 1 + 0.13 * Math.sin(x * 8 + y * 3) * Math.cos(z * 7) + 0.07 * Math.cos(y * 14 + z * 5);
+    p.setXYZ(i, x * d, y * d, z * d);
+  }
+  rockGeometry.computeVertexNormals();
+  stone.map = grain; darkStone.map = grain;
+  function rock(x: number, y: number, z: number, sx: number, sy: number, sz: number, material = stone) {
+    const o = mesh(rockGeometry, material, x, y, z); o.scale.set(sx, sy, sz); o.rotation.set(random(), random() * 3, random() * 0.3); return o;
+  }
+  scene.add(new THREE.HemisphereLight("#c7dce1", "#625235", 1.6));
+  const daylight = new THREE.DirectionalLight("#bbd6d9", 2.6); daylight.position.set(-5, 9, 6); scene.add(daylight);
+  const backlight = new THREE.DirectionalLight("#deb58c", 1.2); backlight.position.set(3, 4, -30); scene.add(backlight);
+  function light(color: string, intensity: number, distance: number, x: number, y: number, z: number) { const l = new THREE.PointLight(color, intensity, distance, 1.8); l.position.set(x, y, z); scene.add(l); return l; }
+  // Authored bays: wide entrance, narrow stone threshold, then a second garden chamber.
+  const bays = [8, 3, -2, -7, -12, -17, -22, -27, -32, -37];
+  bays.forEach((z, bay) => {
+    const width = bay === 3 || bay === 5 ? 4.8 : 6.5;
+    for (const side of [-1, 1]) {
+      rock(side * (width + 0.6), 2.5, z, 2.4, 4.4, 3.8, bay % 2 ? stone : darkStone);
+      rock(side * (width - 0.25), 0.25, z + 1.8, 2.1, 1.25, 2.5);
+      rock(side * (width - 0.5), 6.7, z - 1, 2.7, 1.5, 3.5);
+    }
+    rock(0.8 * Math.sin(bay), 7.8, z, 5.2, 1.7, 3.6, darkStone);
+  });
+  const floor = mesh(new THREE.PlaneGeometry(24, 65, 36, 90), darkStone, 0, -0.14, -14); floor.rotation.x = -Math.PI / 2;
+  const fp = floor.geometry.attributes.position;
+  for (let i = 0; i < fp.count; i++) fp.setZ(i, 0.08 * Math.sin(fp.getX(i) * 3) * Math.cos(fp.getY(i) * 2));
+  floor.geometry.computeVertexNormals();
+  // Stone strata and gravel collect beside the track, keeping the travel corridor clear.
+  for (let i = 0; i < 125; i++) {
+    const side = i % 2 ? 1 : -1; const z = 10 - random() * 51;
+    const size = 0.12 + random() * 0.55;
+    rock(side * (1.7 + random() * 4), size * 0.2, z, size * 1.5, size, size * 1.2, i % 4 ? stone : moss);
+  }
+  // Track, individual sleepers, rail heads and fastening plates.
+  for (let z = 12; z > -43; z -= 1.15) {
+    box(0, 0.02, z, 2.65, 0.18, 0.26, wood);
+    for (const x of [-0.92, 0.92]) box(x, 0.16, z, 0.28, 0.045, 0.34, iron);
+  }
+  for (const x of [-0.92, 0.92]) { box(x, 0.18, -15, 0.085, 0.24, 58, iron); box(x, 0.31, -15, 0.16, 0.07, 58, iron); }
+  // Timber supports are placed at thresholds, rather than repeated around every rock.
+  for (const z of [-6.8, -15, -29]) {
+    for (const x of [-4.6, 4.6]) {
+      box(x, 2.6, z, 0.36, 5.2, 0.42, wood);
+      const brace = box(x * 0.85, 4.8, z, 0.23, 1.7, 0.38, wood); brace.rotation.z = x > 0 ? -0.7 : 0.7;
+      for (const y of [0.6, 4.4]) box(x, y, z + 0.23, 0.45, 0.2, 0.04, iron);
+    }
+    box(0, 5.25, z, 9.7, 0.45, 0.5, wood);
+  }
+  function lantern(x: number, y: number, z: number) {
+    box(x, y + 0.65, z, 0.035, 1.2, 0.035, iron);
+    mesh(new THREE.CylinderGeometry(0.17, 0.22, 0.12, 8), brass, x, y + 0.28, z);
+    mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.4, 8), lampMat, x, y, z);
+    mesh(new THREE.CylinderGeometry(0.22, 0.18, 0.12, 8), iron, x, y - 0.26, z);
+    for (const dx of [-0.16, 0.16]) box(x + dx, y, z + 0.05, 0.025, 0.5, 0.025, iron);
+    light("#ffd29a", 22, 9, x, y, z);
+  }
+  lantern(-3.9, 3.8, -3); lantern(3.8, 3.3, -13); lantern(-3.7, 3.7, -27);
+  // Purposefully composed mineral seams: amber at SAKIKO, lilac/sea-glass at Jellink.
+  const crystalShaft = new THREE.CylinderGeometry(0.23, 0.28, 1.1, 6, 1);
+  const crystalTip = new THREE.ConeGeometry(0.23, 0.4, 6); crystalTip.translate(0, 0.75, 0);
+  const crystalGeo = mergeGeometries([crystalShaft, crystalTip])!;
+  crystalShaft.dispose(); crystalTip.dispose();
+  function cluster(x: number, y: number, z: number, color: string, scale: number) {
+    const cm = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.3, metalness: 0.25, roughness: 0.22, flatShading: true });
+    rock(x, y - 0.1, z, scale, scale * 0.45, scale * 0.8, darkStone);
+    const placements = [[0, 0, 0, 1.5], [-0.45, -0.25, 0.12, 1], [0.38, -0.15, 0.1, 1.2], [0.15, -0.35, 0.5, 0.65], [-0.18, -0.2, -0.35, 0.9]];
+    placements.forEach(([dx, dy, dz, s]) => {
+      const c = mesh(crystalGeo, cm, x + dx * scale, y + (dy + s * 0.6) * scale, z + dz * scale);
+      c.scale.setScalar(s * scale); c.rotation.z = -dx * 0.65; c.rotation.x = dz * 0.6;
+    });
+    light(color, 10 * scale, 6, x, y + scale, z);
+  }
+  cluster(-4.3, 0.5, -1, "#e5ac67", 1.5); cluster(4.4, 0.4, -6, "#8fc9c0", 1.15);
+  cluster(4.6, 1, 4, "#c0b0d6", 1.4); cluster(-4.9, 1, -22, "#83c7c0", 1.7);
+  cluster(4.2, 0.5, -25, "#b9a1cf", 1.7); cluster(-3.2, 0.3, -32, "#e7b67a", 0.9);
+  cluster(-2.7, 0.15, -2.4, "#deb26e", 0.6); cluster(2.7, 0.15, -26, "#a8b8d2", 0.65);
+  // Fern fronds with paired tapered leaflets, plus hanging vines following the stone.
+  const leafShape = new THREE.Shape(); leafShape.moveTo(0, 0); leafShape.quadraticCurveTo(0.22, 0.15, 0, 0.8); leafShape.quadraticCurveTo(-0.15, 0.25, 0, 0);
+  const leafGeo = new THREE.ShapeGeometry(leafShape);
+  const foliage = new THREE.InstancedMesh(leafGeo, leafMat, 1600); let leaves = 0; const dummy = new THREE.Object3D();
+  function leaf(x: number, y: number, z: number, rx: number, ry: number, rz: number, size: number) {
+    dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.setScalar(size); dummy.updateMatrix(); foliage.setMatrixAt(leaves++, dummy.matrix);
+  }
+  for (const [x, z, s] of [[-3.7, 3, 1.4], [3.3, 0, 1.1], [-4, -5, 1], [4.4, -10, 1.3], [-3.3, -19, 1.6], [3.4, -21, 1.5], [-4, -27, 1.1], [4.5, -32, 1.3]]) {
+    for (let frond = 0; frond < 7; frond++) {
+      const angle = frond * 0.9;
+      for (let n = 1; n < 9; n++) {
+        const t = n / 9; const r = t * s;
+        for (const side of [-1, 1]) leaf(x + Math.cos(angle) * r, 0.2 + Math.sin(t * 2.2) * s, z + Math.sin(angle) * r, -0.5, angle, side * (0.7 + t * 0.4), (1 - t * 0.65) * s * 0.65);
+      }
+    }
+  }
+  for (const [x, z, length] of [[-4.4, -1, 3], [4.5, -5, 2.8], [-3, -10, 1.8], [3.8, -19, 3], [-4.4, -25, 3.2]]) {
+    const points = Array.from({ length: 15 }, (_, i) => new THREE.Vector3(x + Math.sin(i * 0.4) * 0.25, 6.5 - i / 14 * length, z + Math.sin(i * 0.3) * 0.2));
+    mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 20, 0.025, 4, false), moss, 0, 0, 0);
+    points.forEach((v, i) => leaf(v.x, v.y, v.z, 0.15, i * 0.7, i % 2 ? 2.3 : -2.3, 0.65));
+  }
+  foliage.count = leaves; foliage.instanceMatrix.needsUpdate = true; scene.add(foliage);
+  // Hanging limestone needles have broad eroded roots and irregular lengths.
+  for (let i = 0; i < 35; i++) {
+    const x = (random() - 0.5) * 10, z = 8 - random() * 48, h = 0.6 + random() * 1.5;
+    const s = mesh(new THREE.ConeGeometry(0.24 + h * 0.12, h, 7), stone, x, 6.7 - h * 0.4, z); s.rotation.z = Math.PI + random() * 0.15;
+  }
+  // Batch immobile scenery by material; interactive walls and the cart remain independent.
+  const batches = new Map<THREE.Material, THREE.BufferGeometry[]>();
+  for (const object of [...scene.children]) {
+    if (!(object instanceof THREE.Mesh) || object instanceof THREE.InstancedMesh || Array.isArray(object.material)) continue;
+    object.updateMatrix();
+    const geometry = object.geometry.index ? object.geometry.toNonIndexed() : object.geometry.clone();
+    geometry.applyMatrix4(object.matrix); geometry.deleteAttribute("uv1");
+    const list = batches.get(object.material) ?? []; list.push(geometry); batches.set(object.material, list); scene.remove(object);
+  }
+  batches.forEach((geometries, material) => { const combined = mergeGeometries(geometries); if (combined) scene.add(new THREE.Mesh(combined, material)); geometries.forEach(g => g.dispose()); });
+  const walls: { group: THREE.Group; chunks: THREE.Mesh[]; origins: THREE.Vector3[]; board: THREE.Group; cracks: THREE.LineSegments }[] = [];
+  const clickTargets: THREE.Object3D[] = [];
+  function label(text: string, subtitle: string) {
+    const c = document.createElement("canvas"); c.width = 1024; c.height = 240; const ctx = c.getContext("2d")!;
+    ctx.fillStyle = "#282d29"; ctx.fillRect(0, 0, 1024, 240); ctx.strokeStyle = "#b49c71"; ctx.lineWidth = 3; ctx.strokeRect(14, 14, 996, 212);
+    ctx.fillStyle = "#ede3cb"; ctx.textAlign = "center"; ctx.font = "64px Georgia"; ctx.fillText(text, 512, 104); ctx.font = "24px monospace"; ctx.fillStyle = "#c5b692"; ctx.fillText(subtitle, 512, 171);
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex); return new THREE.MeshBasicMaterial({ map: tex });
+  }
+  mineProjects.forEach((project, index) => {
+    const z = -5 - index * 24; const group = new THREE.Group(); group.position.z = z; scene.add(group);
+    const chunks: THREE.Mesh[] = []; const origins: THREE.Vector3[] = []; const edges: number[] = [];
+    // Authored pre-fracture: offset triangulated stone cells, animated without a physics engine.
+    const cols = 6, rows = 4; const vertices: THREE.Vector2[][] = [];
+    for (let row = 0; row <= rows; row++) {
+      vertices[row] = [];
+      for (let col = 0; col <= cols; col++) vertices[row][col] = new THREE.Vector2(-4.7 + col * 9.4 / cols + (col > 0 && col < cols ? (random() - 0.5) * 0.65 : 0), row * 5.8 / rows + (row > 0 && row < rows ? (random() - 0.5) * 0.5 : 0));
+    }
+    for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
+      const a = vertices[row][col], b = vertices[row][col + 1], c = vertices[row + 1][col + 1], d = vertices[row + 1][col];
+      for (const triangle of [[a, b, c], [a, c, d]]) {
+        const center = triangle.reduce((v, p) => v.add(p), new THREE.Vector2()).multiplyScalar(1 / 3);
+        const shape = new THREE.Shape(triangle.map(v => v.clone().sub(center)));
+        const g = new THREE.ExtrudeGeometry(shape, { depth: 0.6, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.03, bevelSegments: 1 });
+        const chunk = mesh(g, stone, center.x, center.y, (random() - 0.5) * 0.16, group); chunks.push(chunk); origins.push(chunk.position.clone());
+        for (let j = 0; j < 3; j++) { const a = triangle[j], b = triangle[(j + 1) % 3]; edges.push(a.x, a.y, 0.65, b.x, b.y, 0.65); }
+      }
+    }
+    const cg = new THREE.BufferGeometry(); cg.setAttribute("position", new THREE.Float32BufferAttribute(edges, 3));
+    const cracks = new THREE.LineSegments(cg, new THREE.LineBasicMaterial({ color: "#efc48d", transparent: true, opacity: 0 })); group.add(cracks);
+    const board = new THREE.Group(); board.position.set(0, 2.95, 0.8); group.add(board);
+    box(0, 0, -0.08, index ? 2.05 : 4.45, 2.8, 0.2, wood, board);
+    box(0, 0, 0.035, index ? 1.75 : 4.12, 2.48, 0.08, iron, board);
+    const imageMat = new THREE.MeshBasicMaterial({ color: "#b7b1a0" });
+    const picture = mesh(new THREE.PlaneGeometry(index ? 1.25 : 3.95, 2.3), imageMat, 0, 0, 0.1, board);
+    const loader = new THREE.TextureLoader(); loader.load(project.image, tex => { if (disposed) { tex.dispose(); return; } tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex); imageMat.map = tex; imageMat.color.set("white"); imageMat.needsUpdate = true; });
+    mesh(new THREE.PlaneGeometry(3.2, 0.75), label(project.title, `${project.category.toUpperCase()}  /  INSPECT`), 0, -1.85, 0.15, board);
+    clickTargets.push(picture);
+    for (const x of [-2.1, 2.1]) for (const y of [-1.2, 1.2]) mesh(new THREE.SphereGeometry(0.045, 6, 4), brass, x, y, 0.07, board);
+    walls.push({ group, chunks, origins, board, cracks });
+  });
+  // A small maker's plaque is physically mounted on the cart.
+  const cart = new THREE.Group(); scene.add(cart);
+  box(0, -0.9, -0.3, 2.1, 0.1, 2, iron, cart);
+  for (const x of [-1.08, 1.08]) {
+    box(x, -0.5, -0.65, 0.12, 0.95, 2.5, iron, cart);
+    box(x, -0.02, -0.65, 0.15, 0.09, 2.55, brass, cart);
+    for (let z = -1.8; z < 0.7; z += 0.35) mesh(new THREE.SphereGeometry(0.045, 6, 4), brass, x - Math.sign(x) * 0.08, -0.18, z, cart);
+  }
+  box(0, -0.45, -1.85, 2.2, 0.82, 0.13, iron, cart);
+  box(0, -0.02, -1.85, 2.25, 0.1, 0.18, brass, cart);
+  mesh(new THREE.PlaneGeometry(0.76, 0.18), label("MEDISSL", "CREATIVE DEVELOPER"), -0.5, -0.29, -1.77, cart);
+  const drill = new THREE.Group(); drill.position.set(0.7, -0.1, -3.1); drill.rotation.set(0.15, 0.45, 0); drill.scale.setScalar(0.85); cart.add(drill);
+  const drillBody = mesh(new THREE.CylinderGeometry(0.17, 0.2, 0.75, 16), iron, 0, 0, 0.3, drill); drillBody.rotation.x = Math.PI / 2;
+  const bit = new THREE.Group(); drill.add(bit);
+  const cone = mesh(new THREE.ConeGeometry(0.39, 1.25, 24), brass, 0, 0, -0.55, bit); cone.rotation.x = -Math.PI / 2;
+  const helix: THREE.Vector3[] = [];
+  for (let i = 0; i <= 160; i++) { const t = i / 160; const r = 0.39 * (1 - t) + 0.015; helix.push(new THREE.Vector3(Math.cos(t * Math.PI * 9) * r, Math.sin(t * Math.PI * 9) * r, 0.06 - t * 1.25)); }
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(helix), 160, 0.055, 5, false), iron, 0, 0, 0, bit);
+  for (const x of [-0.35, 0.35]) box(x, -0.2, -0.1, 0.1, 0.1, 1.3, iron, drill);
+  const headlight = new THREE.PointLight("#ffe0ad", 10, 10); headlight.position.set(-0.6, 0, -2); cart.add(headlight);
+  // Dust uses one draw call. It only becomes dense during fracture.
+  const dustPositions = new Float32Array(180 * 3);
+  for (let i = 0; i < 180; i++) { dustPositions[i * 3] = (random() - 0.5) * 12; dustPositions[i * 3 + 1] = random() * 6; dustPositions[i * 3 + 2] = -random() * 36; }
+  const dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
+  const dustMat = new THREE.PointsMaterial({ color: "#d0c2a4", size: 0.045, transparent: true, opacity: 0.35, depthWrite: false }); const dust = new THREE.Points(dustGeo, dustMat); scene.add(dust);
+  let station = 0, elapsed = 0, moving = false, paused = false, time = 0, last = performance.now(), frame = 0;
+  let phase = "", pointerX = 0, pointerY = 0, cameraZ = 7;
+  let slowFrames = 0, qualityReduced = false;
+  const setPhase = (s: string) => { if (phase !== s) { phase = s; events.phase(s); } };
+  const finish = () => { moving = false; station = 1; cameraZ = -17; walls[0].group.visible = false; dustMat.opacity = 0.35; dustMat.size = 0.045; events.station(1); setPhase("ready"); };
+  const jump = (index: number) => {
+    moving = false; elapsed = 0; station = index === 1 ? 1 : 0; cameraZ = station ? -17 : 7;
+    dustMat.opacity = 0.35; dustMat.size = 0.045;
+    walls[0].group.visible = station === 0;
+    walls.forEach(w => { w.board.visible = true; w.board.scale.setScalar(1); w.cracks.visible = true; w.chunks.forEach((c, i) => { c.position.copy(w.origins[i]); c.rotation.set(0, 0, 0); }); (w.cracks.material as THREE.LineBasicMaterial).opacity = 0; });
+    events.station(station); setPhase("ready");
+  };
+  const advance = () => { if (moving || station === 1 || paused) return; if (reduced) { finish(); return; } elapsed = 0; moving = true; setPhase("drilling"); };
+  const resize = () => { const w = host.clientWidth, h = host.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.fov = w < 650 ? 72 : 56; camera.updateProjectionMatrix(); };
+  const observer = new ResizeObserver(resize); observer.observe(host); resize();
+  const pointer = (e: PointerEvent) => { if (e.pointerType === "mouse") { pointerX = (e.clientX / host.clientWidth - 0.5) * 0.07; pointerY = (e.clientY / host.clientHeight - 0.5) * 0.025; } };
+  const raycaster = new THREE.Raycaster();
+  const click = (e: MouseEvent) => { if (moving || paused) return; const rect = renderer.domElement.getBoundingClientRect(); raycaster.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera); if (raycaster.intersectObject(clickTargets[station]).length) events.inspect(); };
+  const lost = (e: Event) => { e.preventDefault(); events.failed(); };
+  host.addEventListener("pointermove", pointer); renderer.domElement.addEventListener("click", click); renderer.domElement.addEventListener("webglcontextlost", lost);
+  function render(now: number) {
+    if (disposed) return;
+    frame = requestAnimationFrame(render); const rawDelta = (now - last) / 1000; const dt = Math.min(rawDelta, 0.05); last = now;
+    if (document.hidden || paused) return;
+    time += dt;
+    if (rawDelta > 0.035) slowFrames++; else slowFrames = Math.max(0, slowFrames - 1);
+    if (slowFrames > 80 && !qualityReduced) { renderer.setPixelRatio(1); resize(); qualityReduced = true; }
+    if (moving) {
+      elapsed += dt; bit.rotation.z += dt * 24;
+      const journey = journeyAt(elapsed);
+      cameraZ = journey.cameraZ;
+      setPhase(journey.phase);
+      const wall = walls[0];
+      if (elapsed < 1.2) {
+        (wall.cracks.material as THREE.LineBasicMaterial).opacity = smooth(elapsed / 1.3);
+        wall.cracks.geometry.setDrawRange(0, Math.floor(smooth(elapsed / 1.2) * wall.cracks.geometry.attributes.position.count / 2) * 2);
+        wall.board.scale.setScalar(1 - smooth((elapsed - 0.6) / 0.6));
+      } else {
+        wall.board.visible = false; wall.cracks.visible = false;
+        const t = Math.max(0, elapsed - 1.2);
+        wall.chunks.forEach((c, i) => { const o = wall.origins[i]; c.position.set(o.x + (o.x >= 0 ? 1 : -1) * t * (1.7 + i % 3 * 0.3), o.y - t * t * 6, o.z - t * (0.7 + i % 4 * 0.15)); c.rotation.set(t * (i % 3 - 1), t * 0.4, t * (i % 2 ? 0.6 : -0.6)); });
+        dustMat.opacity = 0.35 + Math.sin(Math.min(t / 2, 1) * Math.PI) * 0.6; dustMat.size = 0.045 + Math.sin(Math.min(t / 2, 1) * Math.PI) * 0.13;
+      }
+      if (journey.complete) finish();
+    }
+    const vibration = moving && elapsed < 1.6 ? Math.sin(time * 70) * 0.018 : 0;
+    camera.position.set(vibration, 2.25 + vibration, cameraZ);
+    camera.rotation.set(0.045 + (reduced ? 0 : -pointerY), reduced ? 0 : -pointerX, vibration * 0.1);
+    cart.position.set(0, 1.45 + vibration * 0.4, cameraZ); cart.rotation.z = vibration * 0.3;
+    if (!reduced) dust.position.y = Math.sin(time * 0.2) * 0.2;
+    renderer.render(scene, camera);
+    host.dataset.drawCalls = String(renderer.info.render.calls); host.dataset.triangles = String(renderer.info.render.triangles); host.dataset.quality = qualityReduced ? "adaptive" : "full";
+  }
+  frame = requestAnimationFrame(render); setPhase("ready");
+  return { advance, skip: () => { if (moving) finish(); }, jump, pause: v => { paused = v; }, dispose: () => {
+    disposed = true; cancelAnimationFrame(frame); observer.disconnect(); host.removeEventListener("pointermove", pointer); renderer.domElement.removeEventListener("click", click); renderer.domElement.removeEventListener("webglcontextlost", lost);
+    const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>();
+    scene.traverse(o => { if (o instanceof THREE.Mesh || o instanceof THREE.Points || o instanceof THREE.LineSegments) { geometries.add(o.geometry); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => materials.add(m)); } });
+    geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); renderer.dispose(); renderer.domElement.remove();
+  } };
+}
+

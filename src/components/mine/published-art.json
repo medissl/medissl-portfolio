@@ -1,0 +1,97 @@
+[
+  {
+    "id": "5bc8345e-cafc-4ad2-9d03-1681928dd8dd",
+    "title": "Marina Takopi Fanart",
+    "slug": "marina-takopi-fanart",
+    "category": "Digital Art",
+    "short_description": "Silly quick drawing",
+    "description": "The anime is very cool",
+    "tools": [
+      "Clip Studio Paint"
+    ],
+    "cover_path": "10868e19-f4b3-4f93-bc41-441992378a46/5bc8345e-cafc-4ad2-9d03-1681928dd8dd/cover-2e9cc107-51fe-48e7-b84e-c776484b509e-marina-takopi.jpg",
+    "year": 2026,
+    "project_media": [
+      {
+        "id": "2154b926-fd3e-4f3e-8b3f-f980de25b490",
+        "project_id": "5bc8345e-cafc-4ad2-9d03-1681928dd8dd",
+        "path": "10868e19-f4b3-4f93-bc41-441992378a46/5bc8345e-cafc-4ad2-9d03-1681928dd8dd/process-7be12b3b-f7f4-4d68-bdb4-1837a8c5c765-marina-ref2.jpg",
+        "caption": "",
+        "alt_text": "Marina Takopi Fanart",
+        "section": "process",
+        "display_order": 0,
+        "created_at": "2026-09-26T15:13:00.699015+00:00"
+      }
+    ]
+  },
+  {
+    "id": "ab96a4ba-d03f-4010-9018-286ce38a6ede",
+    "title": "Quick self potrait sketch",
+    "slug": "quick-self-potrait-sketch",
+    "category": "Traditional Art",
+    "short_description": "This took 5 minutes, very cool",
+    "description": "",
+    "tools": [
+      "Paper and pen"
+    ],
+    "cover_path": "10868e19-f4b3-4f93-bc41-441992378a46/ab96a4ba-d03f-4010-9018-286ce38a6ede/cover-3fa9fd19-1f2d-4422-ac91-b5ea0a51fac6-illustration4.jpg",
+    "year": 2026,
+    "project_media": [
+      {
+        "id": "c8d06a77-e029-41c9-84a4-4bb4fb616c10",
+        "project_id": "ab96a4ba-d03f-4010-9018-286ce38a6ede",
+        "path": "10868e19-f4b3-4f93-bc41-441992378a46/ab96a4ba-d03f-4010-9018-286ce38a6ede/gallery-f00610b4-0a36-4ac8-a078-626da38a4955-illustration4.jpg",
+        "caption": "",
+        "alt_text": "Quick self potrait sketch",
+        "section": "gallery",
+        "display_order": 0,
+        "created_at": "2026-09-27T07:08:30.127257+00:00"
+      },
+      {
+        "id": "9d4b1ce1-75bf-4fe5-8bae-ac54ad688372",
+        "project_id": "ab96a4ba-d03f-4010-9018-286ce38a6ede",
+        "path": "10868e19-f4b3-4f93-bc41-441992378a46/ab96a4ba-d03f-4010-9018-286ce38a6ede/gallery-c81e33e3-2ba8-4f42-8254-a7972a26ad30-illustration4.jpg",
+        "caption": "",
+        "alt_text": "Quick self potrait sketch",
+        "section": "gallery",
+        "display_order": 1,
+        "created_at": "2026-09-27T07:08:42.11439+00:00"
+      }
+    ]
+  },
+  {
+    "id": "8be03496-b30e-4eb1-a049-556670796573",
+    "title": "Virgin Mary Fanart",
+    "slug": "virgin-mary-fanart",
+    "category": "Digital Art",
+    "short_description": "Virgin Mary fanart inspired by Junji Itto comic artsyle",
+    "description": "My first attempt at serious digital artwork using a drawing tablet. inspired by the bible verse and horror greyscale artsyle.",
+    "tools": [
+      "Clip Studio Paint"
+    ],
+    "cover_path": "10868e19-f4b3-4f93-bc41-441992378a46/8be03496-b30e-4eb1-a049-556670796573/cover-c43cb866-3958-4fc5-bf4c-697b187d6aaa-virgin-mary-manga-illus.jpg",
+    "year": 2026,
+    "project_media": [
+      {
+        "id": "636703f3-0309-4600-82f7-fa960bdba739",
+        "project_id": "8be03496-b30e-4eb1-a049-556670796573",
+        "path": "10868e19-f4b3-4f93-bc41-441992378a46/8be03496-b30e-4eb1-a049-556670796573/gallery-64d0fa56-3686-4281-b0c1-489c5722eccb-virgin-mary-manga-illus.jpg",
+        "caption": "",
+        "alt_text": "Virgin Mary Fanart",
+        "section": "gallery",
+        "display_order": 0,
+        "created_at": "2026-09-26T13:03:42.578993+00:00"
+      },
+      {
+        "id": "72394082-ab25-4652-bae7-68780977c43c",
+        "project_id": "8be03496-b30e-4eb1-a049-556670796573",
+        "path": "10868e19-f4b3-4f93-bc41-441992378a46/8be03496-b30e-4eb1-a049-556670796573/process-82a75a76-2a0d-4aa1-8985-c2165e3b4d21-virgin-mary-manga-illus.jpg",
+        "caption": "",
+        "alt_text": "Virgin Mary Fanart",
+        "section": "process",
+        "display_order": 0,
+        "created_at": "2026-09-26T13:03:43.102215+00:00"
+      }
+    ]
+  }
+]
