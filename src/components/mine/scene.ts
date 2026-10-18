@@ -77,7 +77,10 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean):
       rock(side * (width - 0.25), 0.25, z + 1.8, 2.1, 1.25, 2.5);
       rock(side * (width - 0.5), 6.7, z - 1, 2.7, 1.5, 3.5);
     }
-    rock(0.8 * Math.sin(bay), 7.8, z, 5.2, 1.7, 3.6, darkStone);
+    const roof = rock(0.8 * Math.sin(bay), 7.8, z, 5.2, 1.7, 3.6, darkStone);
+    // Keep the broad slabs overhead; a steep random pitch crossed the display sightline.
+    roof.rotation.x = 0.05;
+    roof.rotation.z = Math.sin(bay) * 0.04;
   });
   const floor = mesh(new THREE.PlaneGeometry(24, 65, 36, 90), darkStone, 0, -0.14, -14); floor.rotation.x = -Math.PI / 2;
   const fp = floor.geometry.attributes.position;
@@ -220,14 +223,29 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean):
   box(0, -0.45, -1.85, 2.2, 0.82, 0.13, iron, cart);
   box(0, -0.02, -1.85, 2.25, 0.1, 0.18, brass, cart);
   mesh(new THREE.PlaneGeometry(0.76, 0.18), label("MEDISSL", "CREATIVE DEVELOPER"), -0.5, -0.29, -1.77, cart);
-  const drill = new THREE.Group(); drill.position.set(0.7, -0.1, -3.1); drill.rotation.set(0.15, 0.45, 0); drill.scale.setScalar(0.85); cart.add(drill);
+  // A bolted crossmember carries a cantilever sled, bearing cradle and motor.
+  // All parts live under the cart so vibration and travel cannot separate the mount.
+  box(0.6, -0.13, -1.85, 1.05, 0.2, 0.3, iron, cart);
+  for (const x of [0.27, 0.93]) {
+    box(x, -0.17, -2.47, 0.12, 0.18, 1.5, iron, cart);
+    const start = new THREE.Vector3(x, -0.65, -1.75);
+    const end = new THREE.Vector3(x, -0.17, -3.1);
+    const strut = box(0, 0, 0, 0.08, start.distanceTo(end), 0.08, brass, cart);
+    strut.position.copy(start).add(end).multiplyScalar(0.5);
+    strut.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), end.sub(start).normalize());
+    mesh(new THREE.SphereGeometry(0.045, 8, 6), brass, x, -0.01, -1.7, cart);
+  }
+  box(0.6, -0.17, -2.9, 0.9, 0.17, 0.38, iron, cart);
+  box(0.6, -0.12, -2.9, 0.3, 0.3, 0.28, iron, cart);
+  const drill = new THREE.Group(); drill.position.set(0.6, 0.02, -2.92); drill.rotation.set(0.12, 0.32, 0); drill.scale.setScalar(0.72); cart.add(drill);
   const drillBody = mesh(new THREE.CylinderGeometry(0.17, 0.2, 0.75, 16), iron, 0, 0, 0.3, drill); drillBody.rotation.x = Math.PI / 2;
   const bit = new THREE.Group(); drill.add(bit);
   const cone = mesh(new THREE.ConeGeometry(0.39, 1.25, 24), brass, 0, 0, -0.55, bit); cone.rotation.x = -Math.PI / 2;
   const helix: THREE.Vector3[] = [];
   for (let i = 0; i <= 160; i++) { const t = i / 160; const r = 0.39 * (1 - t) + 0.015; helix.push(new THREE.Vector3(Math.cos(t * Math.PI * 9) * r, Math.sin(t * Math.PI * 9) * r, 0.06 - t * 1.25)); }
   mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(helix), 160, 0.055, 5, false), iron, 0, 0, 0, bit);
-  for (const x of [-0.35, 0.35]) box(x, -0.2, -0.1, 0.1, 0.1, 1.3, iron, drill);
+  const bearing = mesh(new THREE.TorusGeometry(0.23, 0.065, 8, 20), iron, 0, 0, 0.3, drill);
+  bearing.rotation.z = Math.PI / 4;
   const headlight = new THREE.PointLight("#ffe0ad", 10, 10); headlight.position.set(-0.6, 0, -2); cart.add(headlight);
   // Dust uses one draw call. It only becomes dense during fracture.
   const dustPositions = new Float32Array(180 * 3);
