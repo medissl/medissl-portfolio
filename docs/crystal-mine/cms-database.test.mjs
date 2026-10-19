@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { curatedImport, importSql } from './curated-import.mjs';
 const { PGlite } = await import(pathToFileURL(process.env.MEDISSL_PGLITE_MODULE).href);
 const db = new PGlite();
 const owner = '11111111-1111-4111-8111-111111111111';
@@ -56,5 +57,26 @@ await as('anon'); assert.equal((await db.query('select * from public.projects'))
 await as('authenticated',owner);
 await db.exec("update public.projects set category='Traditional Art',title='Updated artwork' where slug='old-art'");
 assert.equal((await db.query("select title from public.projects where slug='old-art'")).rows[0].title,'Updated artwork');
+await as('postgres');
+const seed = readFileSync(new URL('20261019130926_import_curated_portfolio.sql',migrations),'utf8');
+assert.equal(seed.replaceAll('\r\n','\n'),importSql(),'seed is reproducible from preserved source');
+await db.exec(seed);
+const imported = (await db.query('select * from public.projects where legacy_key is not null order by display_order')).rows;
+assert.equal(imported.length,10);
+for (let i=0;i<imported.length;i++) {
+  for (const key of ['id','legacy_key','slug','title','description','category','tools','cover_path','platform','features','repository_url','demo_url','portrait','display_order','mineral','cover_alt']) assert.deepEqual(imported[i][key],curatedImport[i][key],key);
+}
+assert.equal((await db.query('select * from public.project_media')).rows.length,6);
+await db.exec("update public.projects set title='Owner edit',published=false,slug='renamed-sakiko' where legacy_key='sakiko'");
+await db.exec("delete from public.project_media where project_id=(select id from public.projects where legacy_key='sakiko')");
+await db.exec(seed);
+assert.equal((await db.query("select title,published from public.projects where legacy_key='sakiko'")).rows[0].title,'Owner edit');
+assert.equal((await db.query("select published from public.projects where legacy_key='sakiko'")).rows[0].published,false);
+assert.equal((await db.query('select * from public.project_media')).rows.length,4,'repeat seed cannot resurrect deleted gallery images');
+assert.equal((await db.query("select cover_path from public.projects where slug='old-art'")).rows[0].cover_path,'original/cover.jpg');
+await db.exec("update public.projects set slug='jellink-collision' where legacy_key='jellink'; insert into public.projects(slug,title,category) values ('jellink','Existing content','Software')");
+await assert.rejects(db.exec(seed),/conflicts with existing content/);
+await db.exec('rollback');
 await db.close();
 console.log('Isolated Postgres: additive schema, existing media, draft/publish/order/unpublish, artwork editing, HTTPS constraints and real RLS passed.');
+console.log('Curated import: exact equivalence, repeated execution, preserved admin edits/unpublish/deletions, untouched artwork and conflict abort passed.');

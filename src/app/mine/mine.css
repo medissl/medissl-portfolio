@@ -161,3 +161,9 @@
  .mine-error { padding:24px; }
 }
 @media(prefers-reduced-motion:reduce) { .mine *, .mine *::before,.mine *::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
+/* The cave is a viewport, not a scrolling document. Dialogs and fallback retain
+   their own overflow for long galleries and accessible content navigation. */
+html:has(.mine),body:has(.mine) { height:100%; min-height:0; overflow:hidden; overscroll-behavior:none; }
+.mine { overscroll-behavior:none; }
+.mine-world { touch-action:none; }
+.mine-dialog,.mine-fallback { overscroll-behavior:contain; }
