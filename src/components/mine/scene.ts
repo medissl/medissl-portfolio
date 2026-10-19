@@ -4,7 +4,7 @@ import type { MineProject } from "./projects";
 import { journeyAt, nextStation, advanceSceneryTile } from "./journey";
 import { clipDisplay } from "./fracture";
 
-export type MineEngine = { advance: () => void; skip: () => void; jump: (index: number) => void; pause: (value: boolean) => void; motion: (reduced: boolean) => void; dispose: () => void };
+export type MineEngine = { advance: () => void; skip: () => void; jump: (index: number) => void; catalog: (projects: MineProject[]) => void; pause: (value: boolean) => void; motion: (reduced: boolean) => void; dispose: () => void };
 type Events = { station: (index: number) => void; phase: (phase: string) => void; inspect: () => void; failed: () => void };
 const smooth = (v: number) => { const t = THREE.MathUtils.clamp(v, 0, 1); return t * t * (3 - 2 * t); };
 
@@ -433,7 +433,13 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     host.dataset.geometries = String(renderer.info.memory.geometries); host.dataset.displayFragments = String(walls[0].faces.length); host.dataset.journeyTime = elapsed.toFixed(2);
   }
   jump(initialStation); frame = requestAnimationFrame(render);
-  return { advance, skip: () => { if (moving) finish(); }, jump, pause: v => { paused = v; }, motion: value => { reduced = value; if (reduced && moving) finish(); }, dispose: () => {
+  return { advance, skip: () => { if (moving) finish(); }, jump, catalog: next => {
+    if (!next.length || disposed) return;
+    const id = projects[station].id;
+    projects = next;
+    // Rebind the same two image-bearing walls. Terrain, lights and renderer survive.
+    jump(Math.max(0, projects.findIndex(project => project.id === id)));
+  }, pause: v => { paused = v; }, motion: value => { reduced = value; if (reduced && moving) finish(); }, dispose: () => {
     disposed = true; cancelAnimationFrame(frame); observer.disconnect(); host.removeEventListener("pointermove", pointer); renderer.domElement.removeEventListener("click", click); renderer.domElement.removeEventListener("webglcontextlost", lost);
     const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>();
     scene.traverse(o => { if (o instanceof THREE.Mesh || o instanceof THREE.Points || o instanceof THREE.LineSegments) { geometries.add(o.geometry); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => materials.add(m)); } });

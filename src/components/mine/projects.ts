@@ -9,6 +9,7 @@ export type MineProject = {
   features: string[]; repository: string | null; link: string | null; action: string;
   mineral: string; kind: string; portrait: boolean;
   media: MineMedia[];
+  featured?: boolean;
 };
 
 // Public GitHub inventory verified 2026-10-18. Private Jellink source is represented
@@ -22,6 +23,7 @@ export const repositoryProjects: MineProject[] = githubProjects.map(project => (
 }));
 
 export type PublishedMineRecord = Pick<Project, "id" | "slug" | "title" | "category" | "year" | "description" | "short_description" | "tools" | "cover_path"> & {
+  featured?: boolean;
   project_media: Pick<ProjectMedia, "id" | "path" | "alt_text" | "caption" | "section" | "display_order">[];
 };
 
@@ -32,7 +34,8 @@ export function artworkProjects(records: PublishedMineRecord[], mediaUrl: (path:
     image: mediaUrl(project.cover_path), gallery: null, alt: project.title,
     features: project.description && project.short_description ? [project.short_description] : [],
     repository: null, link: null, action: "View artwork",
-    mineral: "The artist’s grotto", kind: "artwork", portrait: false,
+    mineral: "The artist’s grotto", kind: ["Digital Art", "Traditional Art"].includes(project.category) ? "artwork" : "project", portrait: false,
+    featured: project.featured === true,
     media: [...project.project_media].sort((a, b) => a.display_order - b.display_order).flatMap(media => {
       const src = mediaUrl(media.path);
       return src ? [{ id: media.id, src, alt: media.alt_text || project.title, caption: media.caption, section: media.section }] : [];

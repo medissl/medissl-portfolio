@@ -10,16 +10,20 @@ import { createMineAudio, defaultSound, readSound, soundKey, type SoundPreferenc
 import { mineHref, readMineNavigation, type MinePanel as Panel } from "./navigation";
 
 function ProjectImage({ src, alt, eager = false }: { src: string; alt: string; eager?: boolean }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return <span className="mine-media-error">Image unavailable</span>;
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  if (failedSource === src) return <span className="mine-media-error">Image unavailable</span>;
   return <Image src={src} alt={alt} width={1280} height={720} unoptimized
-    loading={eager ? "eager" : "lazy"} onError={() => setFailed(true)} />;
+    loading={eager ? "eager" : "lazy"} onError={() => setFailedSource(src)} />;
 }
 
-export function MineExperience({ projects, lightweight = false, initialProject, initialPanel = null, savedArtwork = false }: {
+export function MineExperience({ projects: initialProjects, lightweight = false, initialProject, initialPanel = null, savedArtwork: initialSavedArtwork = false }: {
   projects: MineProject[]; lightweight?: boolean; initialProject?: string; initialPanel?: Panel; savedArtwork?: boolean;
 }) {
-  const initialIndex = Math.max(0, projects.findIndex(project => project.id === initialProject));
+  const initialIndex = Math.max(0, initialProjects.findIndex(project => project.id === initialProject));
+  const catalog = useRef(initialProjects);
+  const [projects, setProjects] = useState(initialProjects);
+  const [savedArtwork, setSavedArtwork] = useState(initialSavedArtwork);
+  const [catalogNotice, setCatalogNotice] = useState("");
   const host = useRef<HTMLDivElement>(null);
   const engine = useRef<MineEngine | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -32,12 +36,13 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
   const [panel, setPanel] = useState<Panel>(initialPanel);
   const [detail, setDetail] = useState(initialIndex);
   const [reduced, setReduced] = useState(false);
+  const interaction = useRef({ phase: "loading", detail: initialIndex, panel: initialPanel, failed: lightweight });
   const audio = useRef<ReturnType<typeof createMineAudio> | null>(null);
   const [sound, setSound] = useState(defaultSound);
   const [unlocked, setUnlocked] = useState(false);
   const [audioFailed, setAudioFailed] = useState(false);
-  const current = projects[station];
-  const project = projects[detail];
+  const current = projects[station] ?? projects[0];
+  const project = projects[detail] ?? projects[0];
   const mary = projects.find(item => item.slug === "virgin-mary-fanart");
   const sakiko = projects.find(item => item.id === "sakiko");
   const moving = ["drilling", "breaking", "travelling"].includes(phase);
@@ -84,10 +89,16 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
   useEffect(() => {
     const restore = () => {
       const state = readMineNavigation(new URLSearchParams(window.location.search));
-      const index = Math.max(0, projects.findIndex(item => item.id === state.project || item.slug === state.project));
-      selected.current = index; setStation(index); setDetail(index); setPanel(state.panel);
-      engine.current?.jump(index); engine.current?.pause(Boolean(state.panel));
-      if (state.panel) {
+      const found = catalog.current.findIndex(item => item.id === state.project || item.slug === state.project);
+      const index = Math.max(0, found), nextPanel = state.project && found < 0 ? "index" : state.panel;
+      selected.current = index; setStation(index); setDetail(index); setPanel(nextPanel);
+      engine.current?.jump(index); engine.current?.pause(Boolean(nextPanel));
+      if (state.project && found < 0) {
+        setCatalogNotice("This work is no longer published. Explore the current collection.");
+        const url = new URL(window.location.href); url.searchParams.set("project", catalog.current[index].id); url.searchParams.set("panel", "projects");
+        window.history.replaceState(null, "", url);
+      }
+      if (nextPanel) {
         if (!dialog.current?.open) { opener.current = document.activeElement as HTMLElement; dialog.current?.showModal(); }
         if (dialog.current) dialog.current.scrollTop = 0;
       } else dialog.current?.close();
@@ -98,8 +109,43 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
     });
     window.addEventListener("popstate", restore);
     return () => { window.removeEventListener("popstate", restore); cancelAnimationFrame(focusContact); };
-  }, [initialPanel, projects]);
-  useEffect(() => { inspectRef.current = () => open("project"); });
+  }, [initialPanel]);
+  useEffect(() => { inspectRef.current = () => open("project"); interaction.current = { phase, detail, panel, failed }; });
+  useEffect(() => {
+    let disposed = false, busy = false, checkedAt = Date.now();
+    let controller: AbortController | undefined;
+    const refresh = async () => {
+      if (document.hidden || busy || Date.now() - checkedAt < 5000 || (["drilling", "breaking", "travelling", "loading"].includes(interaction.current.phase) && !interaction.current.failed)) return;
+      busy = true; checkedAt = Date.now(); controller = new AbortController();
+      try {
+        const response = await fetch("/api/mine", { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]) });
+        if (!response.ok) return;
+        const next = await response.json() as { projects: MineProject[]; savedArtwork: boolean };
+        if (disposed || !Array.isArray(next.projects) || !next.projects.length) return;
+        // Never replace a healthy catalog with a degraded feed during an outage.
+        setSavedArtwork(next.savedArtwork);
+        if (next.savedArtwork || JSON.stringify(next.projects) === JSON.stringify(catalog.current)) return;
+        // Travel may have started while the request was in flight. Retry on the next refresh.
+        if (["drilling", "breaking", "travelling", "loading"].includes(interaction.current.phase) && !interaction.current.failed) return;
+        const old = catalog.current, state = interaction.current;
+        const stationId = old[selected.current]?.id, detailId = old[state.detail]?.id;
+        const index = Math.max(0, next.projects.findIndex(item => item.id === stationId));
+        const detailIndex = next.projects.findIndex(item => item.id === detailId);
+        catalog.current = next.projects; selected.current = index;
+        setProjects(next.projects); setStation(index); setDetail(Math.max(0, detailIndex));
+        engine.current?.catalog(next.projects);
+        const url = new URL(window.location.href); url.searchParams.set("project", next.projects[index].id);
+        if (state.panel === "project" && detailIndex < 0) { setPanel("index"); url.searchParams.set("panel", "projects"); }
+        window.history.replaceState(null, "", url);
+        setCatalogNotice(detailIndex < 0 ? "This work is no longer published. Explore the current collection." : "The collection has been updated.");
+      } catch { /* Keep the current collection on a transient connection failure. */ }
+      finally { busy = false; }
+    };
+    const timer = setInterval(() => void refresh(), 60000);
+    const visible = () => { if (!document.hidden) void refresh(); };
+    window.addEventListener("focus", visible); document.addEventListener("visibilitychange", visible);
+    return () => { disposed = true; clearInterval(timer); controller?.abort(); window.removeEventListener("focus", visible); document.removeEventListener("visibilitychange", visible); };
+  }, [lightweight]);
   useEffect(() => {
     if (lightweight) return;
     let cancelled = false;
@@ -112,13 +158,13 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
         engine.current = createMine(host.current, {
           station: index => { selected.current = index; setStation(index); },
           phase: setPhase, inspect: () => inspectRef.current(), failed: () => setFailed(true),
-        }, preference.matches, projects, selected.current);
+        }, preference.matches, catalog.current, selected.current);
         engine.current.pause(Boolean(dialog.current?.open));
       } catch { if (!cancelled) setFailed(true); }
     };
     void start();
     return () => { cancelled = true; engine.current?.dispose(); engine.current = null; };
-  }, [lightweight, projects]);
+  }, [lightweight]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if (failed || event.repeat || dialog.current?.open || event.altKey || event.metaKey || event.ctrlKey) return;
@@ -142,7 +188,7 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
 
   function projectList() {
     return <div className="mine-index">{projects.map((item, index) => (
-      <a key={item.id} href={mineHref(item.id)} data-project={item.id} data-kind={item.kind} data-portrait={item.portrait}
+      <a key={item.id} href={mineHref(item.id)} data-project={item.id} data-kind={item.kind} data-portrait={item.portrait} data-featured={item.featured || undefined}
         className={item.image ? "" : "without-media"} onClick={event => {
           if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
           event.preventDefault(); open("project", index);
@@ -177,7 +223,7 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
         <h1>Projects</h1>
         {!lightweight && <p>The cave is unavailable on this device. Explore the work here.</p>}
         {projectList()}
-        {savedArtwork && <p className="mine-feed-status">Showing saved artwork while the live archive is unavailable.</p>}
+        {savedArtwork && <p className="mine-feed-status">The live collection is unavailable. Showing the last available collection.</p>}
       </section> : <>
         {phase === "loading" && <MineLoading stage="Opening the cave. The project archive is ready." />}
         <footer className="mine-controls">
@@ -230,9 +276,10 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
             <p className="mine-kicker">The collection · {projects.length} stations</p>
             <h2 id="mine-panel-title">Projects</h2>
             <p className="mine-description">Choose where to explore next.</p>
+            {catalogNotice && <p className="mine-feed-status" role="status">{catalogNotice}</p>}
             {projectList()}
             <Link href={`/?view=projects&project=${encodeURIComponent(current.id)}`} className="mine-text-link">Browse without 3D →</Link>
-            {savedArtwork && <p className="mine-feed-status">Showing saved artwork while the live archive is unavailable.</p>}
+            {savedArtwork && <p className="mine-feed-status">The live collection is unavailable. Showing the last available collection.</p>}
           </section>}
           {panel === "about" && <section className="mine-about">
             <div className="mine-about-intro"><p className="mine-kicker">The person behind the mine</p>

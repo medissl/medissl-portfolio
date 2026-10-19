@@ -16,7 +16,7 @@ for (let t = 0; t <= 5; t += 0.01) {
 console.log('Journey timing, clearance, monotonic movement and final stop passed.');
 const drillReach = 2.92 + 1.175 * 0.72 * Math.cos(0.12) * Math.cos(0.32);
 assert.ok(Math.abs((journeyAt(1.2).cameraZ - drillReach) - (-4.31)) < 0.02, 'drill tip meets the stone at fracture');
-for (const count of [1, 2, 10, 13]) {
+for (const count of [1, 2, 10, 13, 14, 50]) {
   let station = 0, tiles = [0, -48];
   const visited = [];
   for (let i = 0; i < count * 3; i++) {

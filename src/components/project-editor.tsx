@@ -37,6 +37,13 @@ function safeFileName(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
 }
 
+function mediaError(files: File[]) {
+  const formats = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+  if (files.some(file => !formats.includes(file.type))) return "Choose JPG, PNG, WebP, GIF or AVIF images.";
+  if (files.some(file => file.size > 15 * 1024 * 1024)) return "Each image must be 15 MB or smaller.";
+  return "";
+}
+
 type FormState = {
   title: string;
   slug: string;
@@ -192,6 +199,8 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
       setStatus("Title and slug are required.");
       return;
     }
+    if (!slugify(form.slug)) { setStatus("Use letters or numbers in the slug."); return; }
+    if (!Number.isInteger(Number(form.year)) || Number(form.year) < 1 || Number(form.year) > 9999) { setStatus("Enter a valid four-digit year."); return; }
 
     setSaving(true);
     setStatus(form.published ? "Publishing…" : "Saving draft…");
@@ -346,6 +355,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
   }
 
   async function setCover(files: File[]) {
+    const error = mediaError(files); if (error) { setStatus(error); return; }
     const file = files[0] ?? null;
     setCoverFile(file);
     await saveDraftFiles(draftKey, "cover", file ? [file] : []);
@@ -356,6 +366,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
     slot: "gallery" | "process",
   ) {
     const incoming = Array.from(event.target.files ?? []);
+    const error = mediaError(incoming); if (error) { setStatus(error); return; }
 
     if (slot === "gallery") {
       const combined = [...galleryFiles, ...incoming];
@@ -485,9 +496,9 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
                 onChange={(event) => update("featured", event.target.checked)}
               />
               <span>
-                <strong>Feature on homepage</strong>
+                <strong>Feature in Projects</strong>
                 <small>
-                  Featured work gets priority in the homepage carousel. Reorder it from Manage Projects.
+                  Give this work a larger presentation in the Projects menu. Station order is managed separately.
                 </small>
               </span>
             </label>

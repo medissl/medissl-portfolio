@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.MEDISSL_BUILD_DIR || ".next",
   images: {
     remotePatterns: [
       {
