@@ -11,8 +11,8 @@ const smooth = (v: number) => { const t = THREE.MathUtils.clamp(v, 0, 1); return
 export function createMine(host: HTMLElement, events: Events, reduced: boolean, projects: MineProject[], initialStation = 0): MineEngine {
   if (!projects.length) throw new Error("The mine needs at least one project.");
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#152b30");
-  scene.fog = new THREE.FogExp2("#24484c", 0.022);
+  scene.background = new THREE.Color("#182327");
+  scene.fog = new THREE.FogExp2("#253338", 0.026);
   const camera = new THREE.PerspectiveCamera(56, 1, 0.08, 90);
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.6));
@@ -26,8 +26,8 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   let seed = 620;
   const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   const mat = (color: string, roughness = 0.9, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness, metalness });
-  const stone = mat("#7d8b8c");
-  const darkStone = mat("#465d5c");
+  const stone = mat("#737976");
+  const darkStone = mat("#48544e");
   const wood = mat("#60452d");
   const iron = mat("#444f50", 0.38, 0.72);
   const brass = mat("#b49158", 0.42, 0.65);
@@ -39,15 +39,14 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   const tc = textureCanvas.getContext("2d")!;
   const pixels = tc.createImageData(256, 256);
   for (let i = 0; i < pixels.data.length; i += 4) {
-    const x = (i / 4) % 256, y = Math.floor(i / 1024);
-    const n = 133 + random() * 52 + Math.sin(x * 0.12 + y * 0.08) * 7;
+    const n = 100 + random() * 85;
     pixels.data[i] = n; pixels.data[i + 1] = n; pixels.data[i + 2] = n; pixels.data[i + 3] = 255;
   }
   tc.putImageData(pixels, 0, 0);
-  tc.strokeStyle = "#9ba29a"; tc.lineWidth = 0.8;
+  tc.strokeStyle = "#555"; tc.lineWidth = 2;
   for (let i = 0; i < 26; i++) { tc.beginPath(); tc.moveTo(random() * 256, 0); tc.bezierCurveTo(random() * 256, 80, random() * 256, 170, random() * 256, 256); tc.stroke(); }
   const grain = new THREE.CanvasTexture(textureCanvas); grain.wrapS = grain.wrapT = THREE.RepeatWrapping; grain.repeat.set(2, 2); textures.push(grain);
-  stone.bumpMap = grain; stone.bumpScale = 0.055; darkStone.bumpMap = grain; darkStone.bumpScale = 0.075; wood.bumpMap = grain; wood.bumpScale = 0.04; moss.map = grain;
+  stone.bumpMap = grain; stone.bumpScale = 0.12; darkStone.bumpMap = grain; darkStone.bumpScale = 0.16; wood.bumpMap = grain; wood.bumpScale = 0.06; moss.map = grain;
   function mesh(g: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number, parent: THREE.Object3D = scene) {
     const o = new THREE.Mesh(g, m); o.position.set(x, y, z); parent.add(o); return o;
   }
@@ -55,7 +54,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   function box(x: number, y: number, z: number, sx: number, sy: number, sz: number, m: THREE.Material, parent: THREE.Object3D = scene) {
     const o = mesh(cube, m, x, y, z, parent); o.scale.set(sx, sy, sz); return o;
   }
-  const rockGeometry = mergeVertices(new THREE.IcosahedronGeometry(1, 6));
+  const rockGeometry = mergeVertices(new THREE.IcosahedronGeometry(1, 4));
   const gravelGeometry = new THREE.IcosahedronGeometry(1, 1);
   const p = rockGeometry.attributes.position;
   for (let i = 0; i < p.count; i++) {
@@ -68,9 +67,9 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   function rock(x: number, y: number, z: number, sx: number, sy: number, sz: number, material = stone) {
     const o = mesh(rockGeometry, material, x, y, z); o.scale.set(sx, sy, sz); o.rotation.set(random(), random() * 3, random() * 0.3); return o;
   }
-  scene.add(new THREE.HemisphereLight("#b5d9dc", "#303b35", 1.35));
-  const daylight = new THREE.DirectionalLight("#e5dfc9", 2.2); daylight.position.set(-5, 9, 6); scene.add(daylight);
-  const backlight = new THREE.DirectionalLight("#76c7d2", 1.6); backlight.position.set(3, 4, -30); scene.add(backlight);
+  scene.add(new THREE.HemisphereLight("#c7dce1", "#625235", 1.6));
+  const daylight = new THREE.DirectionalLight("#bbd6d9", 2.6); daylight.position.set(-5, 9, 6); scene.add(daylight);
+  const backlight = new THREE.DirectionalLight("#deb58c", 1.2); backlight.position.set(3, 4, -30); scene.add(backlight);
   function light(color: string, intensity: number, distance: number, x: number, y: number, z: number) { const l = new THREE.PointLight(color, intensity, distance, 1.8); l.position.set(x, y, z); scene.add(l); return l; }
   // Authored bays: wide entrance, narrow stone threshold, then a second garden chamber.
   const bays = [8, 3, -2, -7, -12, -17, -22, -27, -32, -37];
@@ -192,7 +191,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   scene.add(environment);
   const aheadEnvironment = environment.clone(true); aheadEnvironment.position.z = -48; scene.add(aheadEnvironment);
   const scenery = [environment, aheadEnvironment];
-  type Wall = { group: THREE.Group; chunks: THREE.Mesh[]; origins: THREE.Vector3[]; triangles: THREE.Vector2[][]; faces: THREE.Mesh[]; cracks: THREE.LineSegments; surface: THREE.CanvasTexture; material: THREE.MeshBasicMaterial; revision: number; coverUrl: string | null };
+  type Wall = { group: THREE.Group; chunks: THREE.Mesh[]; origins: THREE.Vector3[]; triangles: THREE.Vector2[][]; faces: THREE.Mesh[]; cracks: THREE.LineSegments; seams: THREE.LineSegments; mount: THREE.Group; surround: THREE.Group; plaque: THREE.Mesh; title: THREE.CanvasTexture; surface: THREE.CanvasTexture; material: THREE.MeshBasicMaterial; revision: number; coverUrl: string | null };
   const walls: Wall[] = [];
   for (let index = 0; index < 2; index++) {
     const z = -5 - index * 24; const group = new THREE.Group(); group.position.z = z; scene.add(group);
@@ -209,12 +208,9 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
         const center = triangle.reduce((v, p) => v.add(p), new THREE.Vector2()).multiplyScalar(1 / 3);
         const shape = new THREE.Shape(triangle.map(v => v.clone().sub(center)));
         const g = new THREE.ExtrudeGeometry(shape, { depth: 0.6, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.03, bevelSegments: 1 });
-        // World-scale mineral grain across the whole wall, rather than a dense
-        // repeat per fragment (which produced moiré on the stationary display).
-        const uv = g.attributes.uv, position = g.attributes.position;
-        for (let i = 0; i < uv.count; i++) uv.setXY(i, (position.getX(i) + center.x + 4.7) / 9.4, (position.getY(i) + center.y) / 5.8);
-        const chunk = mesh(g, stone, center.x, center.y, 0, group); chunks.push(chunk); origins.push(chunk.position.clone()); triangles.push(triangle);
-        for (let j = 0; j < 3; j++) { const a = triangle[j], b = triangle[(j + 1) % 3]; edges.push(a.x, a.y, 0.72, b.x, b.y, 0.72); }
+        const relief = Math.sin(chunks.length * 2.4) * 0.065;
+        const chunk = mesh(g, stone, center.x, center.y, relief, group); chunks.push(chunk); origins.push(chunk.position.clone()); triangles.push(triangle);
+        for (let j = 0; j < 3; j++) { const a = triangle[j], b = triangle[(j + 1) % 3]; edges.push(a.x, a.y, 0.72 + relief, b.x, b.y, 0.72 + relief); }
       }
     }
     const segments = Array.from({ length: edges.length / 6 }, (_, i) => edges.slice(i * 6, i * 6 + 6));
@@ -222,10 +218,24 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     segments.sort((a, b) => distance(a) - distance(b));
     const cg = new THREE.BufferGeometry(); cg.setAttribute("position", new THREE.Float32BufferAttribute(segments.flat(), 3));
     const cracks = new THREE.LineSegments(cg, new THREE.LineBasicMaterial({ color: "#efc48d", transparent: true, opacity: 0 })); group.add(cracks);
+    const seamGeometry = cg.clone(); seamGeometry.translate(0, 0, -0.08);
+    const seams = new THREE.LineSegments(seamGeometry, new THREE.LineBasicMaterial({ color: "#1b2927", transparent: true, opacity: 0.42 })); group.add(seams);
+    const mount = new THREE.Group(), surround = new THREE.Group(); group.add(mount); mount.add(surround); surround.position.set(0, 3.15, 0.88);
+    // Real stepped rails, rather than a border painted onto the screenshot.
+    for (const side of [-1, 1]) {
+      box(side * 0.5, 0, 0, 0.045, 1.08, 0.2, wood, surround);
+      box(0, side * 0.5, 0, 1.08, 0.045, 0.2, wood, surround);
+      box(side * 0.485, 0, 0.09, 0.012, 1, 0.045, brass, surround);
+      box(0, side * 0.485, 0.09, 1, 0.012, 0.045, brass, surround);
+    }
+    const titleCanvas = document.createElement("canvas"); titleCanvas.width = 1024; titleCanvas.height = 180;
+    const title = new THREE.CanvasTexture(titleCanvas); title.colorSpace = THREE.SRGBColorSpace; textures.push(title);
+    const plaque = mesh(new THREE.PlaneGeometry(3.5, 0.55), new THREE.MeshBasicMaterial({ map: title, toneMapped: false }), 0, 1.1, 1.02, mount);
+    box(0, 0, -0.08, 3.65, 0.65, 0.12, iron, plaque);
     const canvas = document.createElement("canvas"); canvas.width = 1280; canvas.height = 1024;
     const surface = new THREE.CanvasTexture(canvas); surface.colorSpace = THREE.SRGBColorSpace; textures.push(surface);
     const material = new THREE.MeshBasicMaterial({ map: surface, side: THREE.DoubleSide, toneMapped: false });
-    walls.push({ group, chunks, origins, triangles, faces: [], cracks, surface, material, revision: 0, coverUrl: null });
+    walls.push({ group, chunks, origins, triangles, faces: [], cracks, seams, mount, surround, plaque, title, surface, material, revision: 0, coverUrl: null });
   }
   // Four decoded covers at most; only the current/next station are requested.
   // Revision checks keep a late image response from replacing a newer selection.
@@ -253,7 +263,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const aspect = image ? image.width / image.height : project.portrait ? 0.6 : 1.72;
     const art = project.kind === "artwork";
     const imageWidth = Math.min(4.4, 2.8 * aspect), imageHeight = imageWidth / aspect;
-    const width = imageWidth + (art ? 0.5 : 0.22), height = imageHeight + 0.72;
+    const width = imageWidth + (art ? 0.5 : 0.16), height = imageHeight + (art ? 0.5 : 0.16);
     const bottom = 3.15 - height / 2, left = -width / 2;
     const canvas = wall.surface.image as HTMLCanvasElement;
     const ctx = canvas.getContext("2d")!;
@@ -261,16 +271,23 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const drawHeight = height * scale;
     ctx.setTransform(1, 0, 0, canvas.height / drawHeight, 0, 0);
     ctx.fillStyle = art ? "#e5d9bd" : "#212d2c"; ctx.fillRect(0, 0, canvas.width, drawHeight);
-    ctx.strokeStyle = art ? "#9c8156" : "#ac9770"; ctx.lineWidth = scale * 0.035;
-    ctx.strokeRect(3, 3, canvas.width - 6, drawHeight - 6);
     const inset = (width - imageWidth) / 2 * scale;
     if (image) ctx.drawImage(image, inset, inset, imageWidth * scale, imageHeight * scale);
     ctx.fillStyle = art ? "#302c24" : "#f1e6cf"; ctx.textAlign = "center";
-    let size = image ? 0.21 : 0.28; ctx.font = `500 ${size * scale}px Arial`;
+    let size = 0.28; ctx.font = `500 ${size * scale}px Arial`;
     while (ctx.measureText(project.title).width > canvas.width - 32 && size > 0.08) { size -= 0.01; ctx.font = `500 ${size * scale}px Arial`; }
-    ctx.fillText(project.title, canvas.width / 2, image ? drawHeight - 0.18 * scale : drawHeight * 0.48);
+    if (!image) ctx.fillText(project.title, canvas.width / 2, drawHeight * 0.48);
     if (!image) { ctx.font = `${0.12 * scale}px Arial`; ctx.fillStyle = "#c4b797"; ctx.fillText(project.category, canvas.width / 2, drawHeight * 0.64); }
     wall.surface.needsUpdate = true;
+    wall.surround.scale.set(width + 0.15, height + 0.15, 1);
+    wall.plaque.position.y = bottom - 0.46; wall.plaque.visible = Boolean(image);
+    const titleCanvas = wall.title.image as HTMLCanvasElement, titleContext = titleCanvas.getContext("2d")!;
+    titleContext.fillStyle = "#222e2c"; titleContext.fillRect(0, 0, 1024, 180);
+    titleContext.strokeStyle = "#b39b6d"; titleContext.lineWidth = 3; titleContext.strokeRect(8, 8, 1008, 164);
+    titleContext.fillStyle = "#efe5cc"; titleContext.textAlign = "center";
+    let titleSize = 58; titleContext.font = `500 ${titleSize}px Arial`;
+    while (titleContext.measureText(project.title).width > 950 && titleSize > 24) titleContext.font = `500 ${--titleSize}px Arial`;
+    titleContext.fillText(project.title, 512, 88); titleContext.font = "26px Arial"; titleContext.fillStyle = "#baa780"; titleContext.fillText(project.category, 512, 140); wall.title.needsUpdate = true;
     wall.faces.forEach(face => { face.removeFromParent(); face.geometry.dispose(); }); wall.faces = [];
     wall.triangles.forEach((triangle, index) => {
       const polygon = clipDisplay(triangle, left, bottom, width, height);
@@ -286,6 +303,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   function bindWall(wall: Wall, projectIndex: number, z: number) {
     const project = projects[projectIndex], revision = ++wall.revision;
     wall.group.position.z = z; wall.group.visible = true;
+    wall.mount.position.set(0, 0, 0); wall.mount.rotation.set(0, 0, 0); wall.seams.visible = true;
     wall.chunks.forEach((chunk, i) => { chunk.position.copy(wall.origins[i]); chunk.rotation.set(0, 0, 0); });
     wall.cracks.visible = true; (wall.cracks.material as THREE.LineBasicMaterial).opacity = 0; wall.cracks.geometry.setDrawRange(0, 0);
     display(wall, project);
@@ -391,6 +409,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
       } else {
         wall.cracks.visible = false;
         const t = Math.max(0, elapsed - 1.2);
+        wall.seams.visible = false; wall.mount.position.y = -t * t * 5; wall.mount.rotation.z = t * 0.16;
         wall.chunks.forEach((c, i) => { const o = wall.origins[i]; c.position.set(o.x + (o.x >= 0 ? 1 : -1) * t * (1.7 + i % 3 * 0.3), o.y + t * (0.2 + i % 3 * 0.15) - t * t * 5, o.z - t * (0.7 + i % 4 * 0.15)); c.rotation.set(t * (i % 3 - 1) * 0.65, t * 0.3, t * (i % 2 ? 0.5 : -0.5)); });
         // One bounded impact cloud, emitted from the actual stone face.
         dustGeo.setDrawRange(0, 180);
