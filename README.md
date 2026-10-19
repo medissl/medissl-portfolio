@@ -24,11 +24,11 @@ The portfolio is both a small playable journey and a practical gallery. Choose a
 
 ## A living CMS
 
-Thirteen stations are the current collection, **not a fixed limit**. Ten curated repository projects are combined with published Supabase content. Publishing another project or artwork adds a discoverable station without changing code or rebuilding the cave.
+Thirteen stations are the current collection, **not a fixed limit**. The unified CMS supports software, games and artwork through Supabase. Publishing an entry needs no code changes or cave rebuild. This update awaits its approved production data migration: compatibility mode still combines the preserved curated catalog with CMS content until the verified cutover.
 
 The server reads published content on each request. An open mine refreshes every 60 seconds and on focus/visibility while idle. Titles, covers, galleries, order, station count, progression, and the return loop adapt to the current catalog. Refreshes preserve the selected project by ID; unpublishing an inspected item returns visitors to the current collection. Missing images receive a text presentation. Mewdi's pixel sprite is intentionally excluded without deleting its CMS record.
 
-Studio at `/admin` supports drafts, publishing, cover/gallery/process uploads, featuring, and station ordering. CMS work follows the curated repository projects. Unsaved editor text and selected files persist in the browser. Database and storage writes require membership in `public.admin_users`; authenticating alone does not grant editing rights.
+Studio at `/admin` supports drafts, publishing, cover/gallery/process uploads, technologies, platform/features, repository/demo/download links, portrait or landscape presentation, featuring, and atomic station ordering. Artwork omits irrelevant software fields. After migration and `MEDISSL_UNIFIED_CMS=true`, every entry—including the ten imported projects—is managed here. Unsaved editor text and selected files persist in the browser. Database and storage writes require membership in `public.admin_users`; authenticating alone does not grant editing rights.
 
 ## Controls and accessibility
 
@@ -40,10 +40,10 @@ Studio at `/admin` supports drafts, publishing, cover/gallery/process uploads, f
 | Close a panel | **Escape** or **Close** |
 | Visit any station | **Projects** → select work |
 | Remove camera travel and destruction motion | **Settings → Instant travel**; system reduced-motion preference is respected |
-| Enable music and effects | **Sound off** or **Settings → Enable sound** |
+| Mute or enable music and effects | **Sound on/off** or **Settings → Enable sound** |
 | Browse without WebGL | **Browse without 3D** |
 
-Sound starts only after explicit interaction. Music and effects have separate sliders and saved preferences. Hidden tabs suspend audio; opening a panel stops mechanical effects. Decoded recordings loop with short crossfades, and a shared compressor provides mix headroom. A quiet, non-stacking navigation chime shares the Effects slider. Sound is optional: every action and project remains available silently.
+Sound defaults enabled and starts at the first browser-permitted pointer or keyboard interaction. Saved explicit mute choices and separate music/effects levels are preserved. Hidden tabs suspend audio; opening a panel stops mechanical effects. Decoded recordings loop with short crossfades, and a shared compressor provides mix headroom. A quiet, non-stacking navigation chime shares the Effects slider. Sound is optional: every action and project remains available silently.
 
 The interface uses native dialogs, visible focus states, labeled controls, and live station announcements. Final listening quality and physical touch-device behavior require human review; signal measurements alone are not listening validation.
 
@@ -86,7 +86,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 
 Never place a secret or service-role key in a `NEXT_PUBLIC_*` variable. For another storage host, also update the image allowlist in `next.config.ts`.
 
-For a separate database, review and apply the SQL files in [`supabase/migrations`](supabase/migrations) in order. Create the owner through the Supabase Auth dashboard, then add that user's UUID to `public.admin_users`. There is no public registration flow. Existing production infrastructure should not be recreated or reseeded.
+For a separate database, review the SQL files in [`supabase/migrations`](supabase/migrations). Create the owner through Supabase Auth, then add that user's UUID to `public.admin_users`. There is no public registration. For the existing production database, follow the [CMS release plan](docs/crystal-mine/CMS-RELEASE-PLAN.md): back up first, apply only the reviewed new migrations after approval, verify the import, then enable the CMS-only feed. Do not replay the initial schema or blindly push migrations: the three historical local filenames differ from their production version IDs.
 
 ```sql
 insert into public.admin_users (user_id) values ('YOUR_AUTH_USER_UUID');

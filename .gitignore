@@ -1,8 +1,13 @@
 node_modules
 .next
 .next-cms-test
+.next-cms-release
+supabase/.temp/
 out
 .env*
 !.env.example
 .DS_Store
 *.log
+/AGENTS.md
+/CLAUDE.md
+/DESIGN.md

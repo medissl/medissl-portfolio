@@ -6,12 +6,14 @@ const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 const root = path.resolve(__dirname, '../..');
 const original = JSON.parse(fs.readFileSync(path.join(root,'src/components/mine/published-art.json'),'utf8'));
-let records = original.map((p,i)=>({...p,published:true,featured:false,display_order:i,carousel_order:i,created_at:`2026-09-${26-i}T00:00:00Z`,updated_at:'2026-09-26T00:00:00Z'}));
+const {curatedImport} = require('./curated-import.mjs');
+let records = [...curatedImport.map(p=>({...p,created_at:'2026-10-19T00:00:00Z',updated_at:'2026-10-19T00:00:00Z'})), ...original.map((p,i)=>({...p,published:true,featured:false,display_order:i,carousel_order:i,created_at:`2026-09-${26-i}T00:00:00Z`,updated_at:'2026-09-26T00:00:00Z'}))];
 let media = records.flatMap(p=>p.project_media);
 const owner = {id:'11111111-1111-4111-8111-111111111111',aud:'authenticated',role:'authenticated',email:'owner@local.test',app_metadata:{provider:'email'},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
 const outsider = {...owner,id:'22222222-2222-4222-8222-222222222222',email:'outsider@local.test'};
 const tokens = new Map(), writes = [];
 let uploads = 0;
+let feedMode = 'normal';
 const upstreamPort = Number(process.env.MINE_TEST_PORT || 3006);
 function json(res,data,status=200) { res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data)); }
 const clientProbe = `<script>${fs.readFileSync(path.join(__dirname,'audio-probe.js'),'utf8')}</script><script>
@@ -33,6 +35,10 @@ const server = http.createServer(async(req,res)=>{
   if(url.pathname.startsWith('/__mock/')) {
     const chunks=[];for await(const chunk of req)chunks.push(chunk);
     let body={};try{body=JSON.parse(Buffer.concat(chunks).toString()||'{}');}catch{/* Multipart upload body, not JSON. */}
+    if(url.pathname==='/__mock/scenario'&&req.method==='POST') {
+      if(!['normal','empty','outage'].includes(body.mode)) {json(res,{message:'Unknown isolated scenario'},400);return;}
+      feedMode=body.mode;json(res,{mode:feedMode});return;
+    }
     if(url.pathname==='/__mock/auth/v1/token') {
       if(body.password!=='local-test-only') {json(res,{error:'invalid_grant',error_description:'Invalid mock credentials'},400);return;}
       const user=body.email===owner.email?owner:outsider;
@@ -42,6 +48,13 @@ const server = http.createServer(async(req,res)=>{
     const user=tokens.get(String(req.headers.authorization||'').replace('Bearer ',''));
     if(url.pathname==='/__mock/auth/v1/user') {json(res,user||{message:'No mock session'},user?200:401);return;}
     if(url.pathname==='/__mock/auth/v1/logout') {json(res,{});return;}
+    if(url.pathname==='/__mock/rest/v1/rpc/reorder_portfolio_stations') {
+      if(user?.id!==owner.id) {json(res,{message:'Administrator access required'},403);return;}
+      const ids=body.ordered_ids;
+      if(!Array.isArray(ids)||new Set(ids).size!==ids.length||ids.some(id=>!records.some(p=>p.id===id&&p.published))) {json(res,{message:'Station list changed'},400);return;}
+      ids.forEach((id,index)=>Object.assign(records.find(p=>p.id===id),{display_order:index,carousel_order:index}));
+      writes.push({method:req.method,table:'reorder',ids});json(res,null);return;
+    }
     if(url.pathname.startsWith('/__mock/storage/')) {
       if(user?.id!==owner.id) {json(res,{message:'Mock authorization denied'},403);return;}
       uploads++;writes.push({method:req.method,path:'storage'});json(res,{Key:url.pathname.split('/object/')[1],Id:randomUUID()});return;
@@ -53,6 +66,8 @@ const server = http.createServer(async(req,res)=>{
     const matches=p=>[...url.searchParams].every(([key,value])=>value.startsWith('eq.')?String(p[key])===value.slice(3):value.startsWith('neq.')?String(p[key])!==value.slice(4):true);
     let rows=all.filter(matches);
     if(req.method==='GET') {
+      if(table==='projects'&&user?.id!==owner.id&&feedMode==='outage') {json(res,{message:'Isolated feed outage'},503);return;}
+      if(table==='projects'&&user?.id!==owner.id&&feedMode==='empty') rows=[];
       if(user?.id!==owner.id) rows=rows.filter(p=>table==='projects'?p.published:records.some(r=>r.id===p.project_id&&r.published));
       if(table==='projects') rows=rows.map(p=>({...p,project_media:media.filter(m=>m.project_id===p.id)}));
       const order=(url.searchParams.get('order')||'').split(',').filter(Boolean);
@@ -79,4 +94,5 @@ const server = http.createServer(async(req,res)=>{
     });
   });upstream.on('error',e=>json(res,{message:e.message},502));req.pipe(upstream);
 });
-server.listen(3005,'127.0.0.1',()=>console.log('Isolated CMS verification: http://localhost:3005/__cms'));
+const harnessPort=Number(process.env.CMS_HARNESS_PORT||3005);
+server.listen(harnessPort,'127.0.0.1',()=>console.log(`Isolated CMS verification: http://localhost:${harnessPort}/__cms`));

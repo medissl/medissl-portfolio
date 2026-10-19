@@ -23,13 +23,13 @@ export const stoneCues = [
 ];
 
 export type SoundPreference = { enabled: boolean; music: number; effects: number };
-export const defaultSound: SoundPreference = { enabled: false, music: 0.2, effects: 0.5 };
+export const defaultSound: SoundPreference = { enabled: true, music: 0.2, effects: 0.5 };
 export const soundKey = "medissl-mine-sound-v1";
 export function readSound(value: string | null): SoundPreference {
   try {
     const p = JSON.parse(value || "null");
     const volume = (v: unknown, fallback: number) => typeof v === "number" && Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : fallback;
-    return { enabled: p?.enabled === true, music: volume(p?.music, 0.2), effects: volume(p?.effects, 0.5) };
+    return { enabled: typeof p?.enabled === "boolean" ? p.enabled : defaultSound.enabled, music: volume(p?.music, 0.2), effects: volume(p?.effects, 0.5) };
   } catch { return { ...defaultSound }; }
 }
 

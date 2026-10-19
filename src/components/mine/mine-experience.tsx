@@ -16,9 +16,37 @@ function ProjectImage({ src, alt, eager = false }: { src: string; alt: string; e
     loading={eager ? "eager" : "lazy"} onError={() => setFailedSource(src)} />;
 }
 
-export function MineExperience({ projects: initialProjects, lightweight = false, initialProject, initialPanel = null, savedArtwork: initialSavedArtwork = false }: {
+type MineProps = {
   projects: MineProject[]; lightweight?: boolean; initialProject?: string; initialPanel?: Panel; savedArtwork?: boolean;
-}) {
+};
+
+function EmptyMine({ unavailable }: { unavailable: boolean }) {
+  useEffect(() => {
+    const controller = new AbortController();
+    const check = async () => {
+      try {
+        const response = await fetch("/api/mine", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) return;
+        const next = await response.json();
+        if (!next.savedArtwork && next.projects?.length) window.location.reload();
+      } catch { /* Remain usable offline and retry on the next interval. */ }
+    };
+    const timer = setInterval(() => void check(), 60000);
+    return () => { clearInterval(timer); controller.abort(); };
+  }, []);
+  return <main className="mine mine-empty" id="main-content"><section className="mine-error">
+    <p className="mine-kicker">MEDISSL</p><h1>{unavailable ? "The collection is temporarily unavailable." : "New work is on its way."}</h1>
+    <p>{unavailable ? "Please try again shortly." : "There are no published projects right now. Check back soon."}</p>
+    <button onClick={() => window.location.reload()}>Refresh collection</button> · <a href="mailto:mediantozeng@gmail.com">Contact Medianto</a>
+  </section></main>;
+}
+
+export function MineExperience(props: MineProps) {
+  const [empty, setEmpty] = useState(!props.projects.length);
+  return empty ? <EmptyMine unavailable={props.savedArtwork === true} /> : <MineCatalog {...props} onEmpty={() => setEmpty(true)} />;
+}
+
+function MineCatalog({ projects: initialProjects, lightweight = false, initialProject, initialPanel = null, savedArtwork: initialSavedArtwork = false, onEmpty }: MineProps & { onEmpty: () => void }) {
   const initialIndex = Math.max(0, initialProjects.findIndex(project => project.id === initialProject));
   const catalog = useRef(initialProjects);
   const [projects, setProjects] = useState(initialProjects);
@@ -39,7 +67,7 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
   const interaction = useRef({ phase: "loading", detail: initialIndex, panel: initialPanel, failed: lightweight });
   const audio = useRef<ReturnType<typeof createMineAudio> | null>(null);
   const [sound, setSound] = useState(defaultSound);
-  const [unlocked, setUnlocked] = useState(false);
+  const soundPreference = useRef(defaultSound);
   const [audioFailed, setAudioFailed] = useState(false);
   const current = projects[station] ?? projects[0];
   const project = projects[detail] ?? projects[0];
@@ -55,14 +83,40 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
     if (!audio.current && value.enabled) {
       audio.current = createMineAudio(() => setAudioFailed(true));
       audio.current.phase(phase, Boolean(panel) || failed || reduced);
-      setUnlocked(true);
     }
+    soundPreference.current = value;
     setSound(value); audio.current?.configure(value);
     try { localStorage.setItem(soundKey, JSON.stringify(value)); } catch { /* Private mode can block storage. */ }
   }
   function savedSound() {
-    try { return readSound(localStorage.getItem(soundKey)); } catch { return sound; }
+    try { return readSound(localStorage.getItem(soundKey)); } catch { return soundPreference.current; }
   }
+
+  useEffect(() => {
+    const read = () => {
+      try { return readSound(localStorage.getItem(soundKey)); } catch { return soundPreference.current; }
+    };
+    const timer = window.setTimeout(() => { const value = read(); soundPreference.current = value; setSound(value); }, 0);
+    const unlock = (event: Event) => {
+      if (!event.isTrusted) return;
+      const value = read(); soundPreference.current = value; setSound(value);
+      if (!value.enabled) return;
+      if (!audio.current) {
+        audio.current = createMineAudio(() => setAudioFailed(true));
+        const state = interaction.current;
+        audio.current.phase(state.phase, Boolean(state.panel) || state.failed || window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      }
+      // Resume/create synchronously inside the trusted gesture, never on mount.
+      audio.current.configure(value);
+    };
+    window.addEventListener("pointerdown", unlock, true);
+    window.addEventListener("keydown", unlock, true);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+    };
+  }, []);
 
   function select(index: number) {
     if (selected.current !== index || moving) engine.current?.jump(index);
@@ -78,7 +132,6 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
   }
   function open(next: Panel, index = station) {
     audio.current?.ui();
-    if (next === "settings" && !unlocked) setSound({ ...savedSound(), enabled: false });
     if (!dialog.current?.open) opener.current = document.activeElement as HTMLElement;
     if (next === "project") { select(index); setDetail(index); }
     setPanel(next); engine.current?.pause(true);
@@ -122,12 +175,13 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
         const response = await fetch("/api/mine", { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]) });
         if (!response.ok) return;
         const next = await response.json() as { projects: MineProject[]; savedArtwork: boolean };
-        if (disposed || !Array.isArray(next.projects) || !next.projects.length) return;
+        if (disposed || !Array.isArray(next.projects)) return;
         // Never replace a healthy catalog with a degraded feed during an outage.
         setSavedArtwork(next.savedArtwork);
         if (next.savedArtwork || JSON.stringify(next.projects) === JSON.stringify(catalog.current)) return;
         // Travel may have started while the request was in flight. Retry on the next refresh.
         if (["drilling", "breaking", "travelling", "loading"].includes(interaction.current.phase) && !interaction.current.failed) return;
+        if (!next.projects.length) { onEmpty(); return; }
         const old = catalog.current, state = interaction.current;
         const stationId = old[selected.current]?.id, detailId = old[state.detail]?.id;
         const index = Math.max(0, next.projects.findIndex(item => item.id === stationId));
@@ -146,7 +200,7 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
     const visible = () => { if (!document.hidden) void refresh(); };
     window.addEventListener("focus", visible); document.addEventListener("visibilitychange", visible);
     return () => { disposed = true; clearInterval(timer); controller?.abort(); window.removeEventListener("focus", visible); document.removeEventListener("visibilitychange", visible); };
-  }, [lightweight]);
+  }, [lightweight, onEmpty]);
   useEffect(() => {
     if (lightweight) return;
     let cancelled = false;
@@ -221,8 +275,8 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
           <button aria-haspopup="dialog" aria-expanded={panel === "index"} onClick={() => open("index")}>Projects</button>
           <button aria-haspopup="dialog" aria-expanded={panel === "about"} onClick={() => open("about")}>About</button>
           <button aria-haspopup="dialog" aria-expanded={panel === "settings"} onClick={() => open("settings")}>Settings</button>
-          <button aria-pressed={unlocked && sound.enabled} onClick={() => changeSound({ ...(unlocked ? sound : savedSound()), enabled: !unlocked || !sound.enabled })}>
-            {unlocked && sound.enabled ? "Sound on" : "Sound off"}
+          <button aria-pressed={sound.enabled} onClick={() => changeSound({ ...savedSound(), enabled: !sound.enabled })}>
+            {sound.enabled ? "Sound on" : "Sound off"}
           </button>
         </nav>
       </header>
@@ -265,6 +319,7 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
             <div className="mine-links">
               {project.link && <Link href={project.link} target="_blank" rel="noreferrer">{project.action} ↗</Link>}
               {project.repository && <a href={project.repository} target="_blank" rel="noreferrer">GitHub ↗</a>}
+              {project.download && <a href={project.download} target="_blank" rel="noreferrer">Download ↗</a>}
             </div>
             </header>
             {(project.image || project.media.length > 0) && <div className={`mine-gallery ${project.portrait ? "portrait" : ""}`}>
@@ -317,10 +372,10 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
             <h2 id="mine-panel-title">Journey settings</h2>
             <fieldset className="mine-audio">
               <legend>Sound in the mine</legend>
-              <label><input type="checkbox" checked={unlocked && sound.enabled} onChange={event => changeSound({ ...sound, enabled: event.target.checked })} /> Enable sound</label>
+              <label><input type="checkbox" checked={sound.enabled} onChange={event => changeSound({ ...sound, enabled: event.target.checked })} /> Enable sound</label>
               <label>Music <input type="range" min="0" max="100" value={Math.round(sound.music * 100)} onChange={event => changeSound({ ...sound, music: Number(event.target.value) / 100 })} /><output>{Math.round(sound.music * 100)}%</output></label>
               <label>Effects <input type="range" min="0" max="100" value={Math.round(sound.effects * 100)} onChange={event => changeSound({ ...sound, effects: Number(event.target.value) / 100 })} /><output>{Math.round(sound.effects * 100)}%</output></label>
-              <p className="mine-help">Sound starts only when you enable it. Your levels are remembered; audio pauses when this tab is hidden.</p>
+              <p className="mine-help">Sound is enabled by default and starts after your first interaction. Your mute choice and levels are remembered; audio pauses when this tab is hidden.</p>
               {audioFailed && <p role="status">Some audio could not play. You can continue exploring silently or toggle sound to retry.</p>}
               <a href="/mine/audio/CREDITS.txt" target="_blank" rel="noreferrer">Audio credits ↗</a>
             </fieldset>

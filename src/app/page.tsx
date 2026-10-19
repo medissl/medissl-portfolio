@@ -13,7 +13,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   for (const [key, value] of Object.entries(query)) if (typeof value === "string") params.set(key, value);
   const state = readMineNavigation(params);
   const project = catalog.projects.find(item => item.id === state.project || item.slug === state.project);
-  if (state.project && !project) notFound();
+  if (state.project && !project && !catalog.savedArtwork) notFound();
   return <MineExperience key={state.lightweight ? "archive" : "mine"} projects={catalog.projects} savedArtwork={catalog.savedArtwork}
     initialProject={project?.id} initialPanel={state.panel} lightweight={state.lightweight} />;
 }

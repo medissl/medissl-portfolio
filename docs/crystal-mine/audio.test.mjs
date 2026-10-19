@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { createMineAudio, readSound, journeySound, stoneCues } from '../../src/components/mine/audio.ts';
 import { journeyAt } from '../../src/components/mine/journey.ts';
 
-assert.deepEqual(readSound('broken'), {enabled:false,music:.2,effects:.5});
+assert.deepEqual(readSound('broken'), {enabled:true,music:.2,effects:.5});
+assert.deepEqual(readSound(null), {enabled:true,music:.2,effects:.5});
+assert.deepEqual(readSound('{}'), {enabled:true,music:.2,effects:.5});
+assert.deepEqual(readSound('{"enabled":false,"music":0.13,"effects":0.7}'), {enabled:false,music:.13,effects:.7});
 assert.deepEqual(readSound('{"enabled":true,"music":8,"effects":-3}'), {enabled:true,music:1,effects:0});
 const contexts = [], sources = [], listeners = new Map(), requests = [];
 class Param { value=0; setTargetAtTime(value) { this.value=value; } }

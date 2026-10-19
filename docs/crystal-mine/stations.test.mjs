@@ -10,7 +10,8 @@ const { outputText } = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true },
 });
 const moduleExports = {};
-new Function('require', 'exports', outputText)(createRequire(sourceUrl), moduleExports);
+const content = await import('../../src/lib/content.ts');
+new Function('require', 'exports', outputText)(name=>name==='../../lib/content'?content:createRequire(sourceUrl)(name), moduleExports);
 const { repositoryProjects, artworkProjects } = moduleExports;
 assert.deepEqual(repositoryProjects.slice(0, 2).map(p => p.id), ['sakiko', 'jellink']);
 assert.equal(repositoryProjects.length, 10, 'preserve the prepared catalog');
@@ -76,3 +77,27 @@ response = {data:Array.from({length:40},(_,i)=>({...created,id:`cms-${i}`,slug:`
 assert.equal((await loaderExports.getMineProjects()).projects.length,50,'catalog has no thirteen-station cap');
 console.log('Dynamic publishing, unpublishing, project classification, featured and missing-media cases passed.');
 console.log('Live, empty, failed and thrown artwork-feed cases passed.');
+
+const { curatedImport } = await import('./curated-import.mjs');
+response = { data:[...curatedImport,...snapshot],error:null };
+unavailable=false;
+assert.equal((await loaderExports.getMineProjects()).projects.length,13,'compatibility feed deduplicates imported projects');
+process.env.MEDISSL_UNIFIED_CMS='true';
+catalog=await loaderExports.getMineProjects();
+assert.equal(catalog.projects.length,13);
+for (let i=0;i<10;i++) {
+  const expected=repositoryProjects[i], actual=catalog.projects[i];
+  for(const key of ['id','slug','title','category','platform','description','tools','alt','features','repository','link','action','mineral','kind','portrait']) assert.deepEqual(actual[key],expected[key],key);
+  assert.deepEqual(actual.media.map(m=>m.src),expected.media.map(m=>`/media/${m.src}`));
+}
+response={data:[{...curatedImport[0],slug:'renamed-sakiko',title:'Edited in Studio'},...snapshot],error:null};
+catalog=await loaderExports.getMineProjects();
+assert.equal(catalog.projects[0].id,'sakiko','legacy deep link survives slug edits');
+assert.equal(catalog.projects[0].title,'Edited in Studio');
+assert.equal(catalog.projects.length,4,'unpublished curated entries are not restored');
+response={data:[],error:null};
+assert.equal((await loaderExports.getMineProjects()).projects.length,0,'fully unpublished catalog is truly empty');
+unavailable=true;
+assert.equal((await loaderExports.getMineProjects()).projects.length,0,'outage never resurrects hardcoded projects');
+delete process.env.MEDISSL_UNIFIED_CMS;
+console.log('Unified feed: imported equivalence, deduplication, stable links, editable content, empty catalog and safe outage passed.');
