@@ -81,7 +81,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
       rock(side * (width - 0.25), 0.25, z + 1.8, 2.1, 1.25, 2.5);
       rock(side * (width - 0.5), 6.7, z - 1, 2.7, 1.5, 3.5);
     }
-    rock(0.8 * Math.sin(bay), 7.8, z, 5.2, 1.7, 3.6, darkStone);
+    rock(0.8 * Math.sin(bay), 10.2, z, 5.2, 1.7, 3.6, darkStone);
   });
   const floor = mesh(new THREE.PlaneGeometry(24, 65, 36, 90), darkStone, 0, -0.14, -14); floor.rotation.x = -Math.PI / 2;
   const fp = floor.geometry.attributes.position;
@@ -163,6 +163,27 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const x = (random() - 0.5) * 10, z = 8 - random() * 48, h = 0.6 + random() * 1.5;
     const s = mesh(new THREE.ConeGeometry(0.24 + h * 0.12, h, 7), stone, x, 6.7 - h * 0.4, z); s.rotation.z = Math.PI + random() * 0.15;
   }
+  // BEGIN OWNER-APPROVED CEILING CLOSURE — 19 October 2026.
+  // Reuse the original detailed stone and texture, keeping the underside above
+  // project displays while bridging the raised roof to the cave shoulders.
+  const ceilingCaps = bays.map((z, bay) => {
+    const cap = mesh(rockGeometry, darkStone, 0, 7.5, z);
+    cap.scale.set(8.2, 1, 4.2); cap.rotation.y = bay % 2 * Math.PI;
+    cap.updateMatrixWorld(true); return cap;
+  });
+  const ceilingRay = new THREE.Raycaster(), upward = new THREE.Vector3(0, 1, 0);
+  const needles = scene.children.filter((object): object is THREE.Mesh<THREE.ConeGeometry> =>
+    object instanceof THREE.Mesh && object.geometry instanceof THREE.ConeGeometry && object.material === stone);
+  let attachedNeedles = 0;
+  for (const needle of needles) {
+    needle.updateMatrixWorld(true);
+    const root = new THREE.Vector3(0, -needle.geometry.parameters.height / 2, 0).applyMatrix4(needle.matrixWorld);
+    ceilingRay.set(new THREE.Vector3(root.x, 0, root.z), upward);
+    const hit = ceilingRay.intersectObjects(ceilingCaps, false)[0];
+    if (hit) { needle.position.y += hit.point.y - root.y + 0.18; attachedNeedles++; }
+  }
+  host.dataset.ceilingNeedles = `${attachedNeedles}/${needles.length}`;
+  // END OWNER-APPROVED CEILING CLOSURE.
   // Batch immobile scenery by material; interactive walls and the cart remain independent.
   const batches = new Map<THREE.Material, THREE.BufferGeometry[]>();
   for (const object of [...scene.children]) {
@@ -254,8 +275,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const art = project.kind === "artwork";
     const imageWidth = Math.min(4.4, 2.8 * aspect), imageHeight = imageWidth / aspect;
     const width = imageWidth + (art ? 0.5 : 0.16), height = imageHeight + (art ? 0.5 : 0.16);
-    // Owner-approved display-only clearance beneath Astra's original Jellink roof.
-    const centerY = project.id === "jellink" ? 1.65 : 3.15;
+    const centerY = 3.15;
     const bottom = centerY - height / 2, left = -width / 2;
     const canvas = wall.surface.image as HTMLCanvasElement;
     const ctx = canvas.getContext("2d")!;
@@ -295,7 +315,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   }
   function bindWall(wall: Wall, projectIndex: number, z: number) {
     const project = projects[projectIndex], revision = ++wall.revision;
-    wall.group.position.set(0, project.id === "jellink" ? 0.3 : 0, z); wall.group.visible = true;
+    wall.group.position.set(0, 0, z); wall.group.visible = true;
     wall.mount.position.set(0, 0, 0); wall.mount.rotation.set(0, 0, 0); wall.seams.visible = true;
     wall.chunks.forEach((chunk, i) => { chunk.position.copy(wall.origins[i]); chunk.rotation.set(0, 0, 0); });
     wall.cracks.visible = true; (wall.cracks.material as THREE.LineBasicMaterial).opacity = 0; wall.cracks.geometry.setDrawRange(0, 0);

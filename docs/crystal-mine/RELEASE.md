@@ -2,7 +2,7 @@
 
 ## Scope and baseline
 
-Started from clean `b5ab69c` on `codex/crystal-mine-slice`. The original approved Astra environment remains unchanged: the protected source block matches both `b55744c` and `4450f1c`. Changes to scene.ts only report elapsed time/cart speed and cancel audio on finish, skip, selection and disposal. No geometry, material, light, camera, progression, CMS, authentication or production-data changes.
+Started from clean `b5ab69c` on `codex/crystal-mine-slice`. At checkpoint 31464d7 the protected source block matched both `b55744c` and `4450f1c`. The subsequent explicit owner correction raises only the central ceiling stones from y=7.8 to y=10.2; the updated test permits only this translation and the reviewed ceiling-closure block, preserving all other baseline source. The audio-stage scene changes report elapsed time/cart speed and cancel audio on finish, skip, selection and disposal. No geometry-detail, material, light, camera, progression, CMS, authentication or production-data changes. The earlier Jellink-only lowering and wall offset are removed so its image/nameplate return together to the normal display height; other frames remain fixed.
 
 ## Audio diagnosis and recovery
 
@@ -31,3 +31,11 @@ Correct repository: https://github.com/medissl/medissl-portfolio, default branch
 Production domain: https://medissl-portfolio.vercel.app. Pre-release rollback deployment: dpl_GkAVWaTZoFTx7b3R7CyxKi3uMzcN (READY; old main). Keep this deployment and Git history until release acceptance.
 
 The owner approved the corrected sound locally and authorized the quiet chime. A preview is still required for deployed route/render/asset verification before production promotion. Preview and production evidence will be appended once available. No production deployment is claimed by this note.
+
+## Owner ceiling-clearance correction
+
+The owner requested the default mine with ceiling stones above the displays, specifically citing MauCuan and Wildfeast, and asked to raise Jellink with its nameplate. A single roof placement changes y=7.8 to y=10.2 before batching/cloning, so every repeated chamber inherits the same correction. All original rock topology, textures, materials, light/camera settings, foliage, crystals and mechanics remain. MauCuan and Wildfeast were visually confirmed clear without moving their frames. Jellink returns to the shared normal display height instead of retaining the old obstruction workaround. Production release remains pending the updated preview review.
+
+The owner additionally requested covering the sky gaps left by the roof lift and reconnecting floating dripstones. Ceiling caps reuse the exact original high-detail rock geometry and dark-stone material/texture, overlap across bays, and join the cave shoulders. Upward raycasts attach each original dripstone root to the actual cap surface before the existing material batching. No camera, lighting, texture, foliage or crystal changes. The baseline test pins the approved closure block by hash and still compares all remaining source against the original checkpoints.
+
+Final local rendered verification: 35/35 dripstone roots intersect the closed ceiling, no exposed sky in the checked Jellink/MauCuan/Wildfeast views, unobstructed images/nameplates, full quality, two walls/two tiles, and no browser errors. Checked desktop, the approximately 578px review pane and 390x844 mobile; mobile has no horizontal overflow. The build/typecheck, focused lint, environment baseline, fracture and journey regressions passed. README screenshots were refreshed from this build.
