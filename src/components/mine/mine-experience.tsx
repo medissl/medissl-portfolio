@@ -28,7 +28,7 @@ function EmptyMine({ unavailable }: { unavailable: boolean }) {
         const response = await fetch("/api/mine", { cache: "no-store", signal: controller.signal });
         if (!response.ok) return;
         const next = await response.json();
-        if (!next.savedArtwork && next.projects?.length) window.location.assign("/");
+        if (!next.savedArtwork && next.projects?.length) window.location.reload();
       } catch { /* Remain usable offline and retry on the next interval. */ }
     };
     const timer = setInterval(() => void check(), 60000);
@@ -37,7 +37,7 @@ function EmptyMine({ unavailable }: { unavailable: boolean }) {
   return <main className="mine mine-empty" id="main-content"><section className="mine-error">
     <p className="mine-kicker">MEDISSL</p><h1>{unavailable ? "The collection is temporarily unavailable." : "New work is on its way."}</h1>
     <p>{unavailable ? "Please try again shortly." : "There are no published projects right now. Check back soon."}</p>
-    <a href="/">Refresh collection</a> · <a href="mailto:mediantozeng@gmail.com">Contact Medianto</a>
+    <button onClick={() => window.location.reload()}>Refresh collection</button> · <a href="mailto:mediantozeng@gmail.com">Contact Medianto</a>
   </section></main>;
 }
 
@@ -67,7 +67,7 @@ function MineCatalog({ projects: initialProjects, lightweight = false, initialPr
   const interaction = useRef({ phase: "loading", detail: initialIndex, panel: initialPanel, failed: lightweight });
   const audio = useRef<ReturnType<typeof createMineAudio> | null>(null);
   const [sound, setSound] = useState(defaultSound);
-  const [unlocked, setUnlocked] = useState(false);
+  const soundPreference = useRef(defaultSound);
   const [audioFailed, setAudioFailed] = useState(false);
   const current = projects[station] ?? projects[0];
   const project = projects[detail] ?? projects[0];
@@ -83,14 +83,40 @@ function MineCatalog({ projects: initialProjects, lightweight = false, initialPr
     if (!audio.current && value.enabled) {
       audio.current = createMineAudio(() => setAudioFailed(true));
       audio.current.phase(phase, Boolean(panel) || failed || reduced);
-      setUnlocked(true);
     }
+    soundPreference.current = value;
     setSound(value); audio.current?.configure(value);
     try { localStorage.setItem(soundKey, JSON.stringify(value)); } catch { /* Private mode can block storage. */ }
   }
   function savedSound() {
-    try { return readSound(localStorage.getItem(soundKey)); } catch { return sound; }
+    try { return readSound(localStorage.getItem(soundKey)); } catch { return soundPreference.current; }
   }
+
+  useEffect(() => {
+    const read = () => {
+      try { return readSound(localStorage.getItem(soundKey)); } catch { return soundPreference.current; }
+    };
+    const timer = window.setTimeout(() => { const value = read(); soundPreference.current = value; setSound(value); }, 0);
+    const unlock = (event: Event) => {
+      if (!event.isTrusted) return;
+      const value = read(); soundPreference.current = value; setSound(value);
+      if (!value.enabled) return;
+      if (!audio.current) {
+        audio.current = createMineAudio(() => setAudioFailed(true));
+        const state = interaction.current;
+        audio.current.phase(state.phase, Boolean(state.panel) || state.failed || window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      }
+      // Resume/create synchronously inside the trusted gesture, never on mount.
+      audio.current.configure(value);
+    };
+    window.addEventListener("pointerdown", unlock, true);
+    window.addEventListener("keydown", unlock, true);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+    };
+  }, []);
 
   function select(index: number) {
     if (selected.current !== index || moving) engine.current?.jump(index);
@@ -106,7 +132,6 @@ function MineCatalog({ projects: initialProjects, lightweight = false, initialPr
   }
   function open(next: Panel, index = station) {
     audio.current?.ui();
-    if (next === "settings" && !unlocked) setSound({ ...savedSound(), enabled: false });
     if (!dialog.current?.open) opener.current = document.activeElement as HTMLElement;
     if (next === "project") { select(index); setDetail(index); }
     setPanel(next); engine.current?.pause(true);
@@ -250,8 +275,8 @@ function MineCatalog({ projects: initialProjects, lightweight = false, initialPr
           <button aria-haspopup="dialog" aria-expanded={panel === "index"} onClick={() => open("index")}>Projects</button>
           <button aria-haspopup="dialog" aria-expanded={panel === "about"} onClick={() => open("about")}>About</button>
           <button aria-haspopup="dialog" aria-expanded={panel === "settings"} onClick={() => open("settings")}>Settings</button>
-          <button aria-pressed={unlocked && sound.enabled} onClick={() => changeSound({ ...(unlocked ? sound : savedSound()), enabled: !unlocked || !sound.enabled })}>
-            {unlocked && sound.enabled ? "Sound on" : "Sound off"}
+          <button aria-pressed={sound.enabled} onClick={() => changeSound({ ...savedSound(), enabled: !sound.enabled })}>
+            {sound.enabled ? "Sound on" : "Sound off"}
           </button>
         </nav>
       </header>
@@ -347,10 +372,10 @@ function MineCatalog({ projects: initialProjects, lightweight = false, initialPr
             <h2 id="mine-panel-title">Journey settings</h2>
             <fieldset className="mine-audio">
               <legend>Sound in the mine</legend>
-              <label><input type="checkbox" checked={unlocked && sound.enabled} onChange={event => changeSound({ ...sound, enabled: event.target.checked })} /> Enable sound</label>
+              <label><input type="checkbox" checked={sound.enabled} onChange={event => changeSound({ ...sound, enabled: event.target.checked })} /> Enable sound</label>
               <label>Music <input type="range" min="0" max="100" value={Math.round(sound.music * 100)} onChange={event => changeSound({ ...sound, music: Number(event.target.value) / 100 })} /><output>{Math.round(sound.music * 100)}%</output></label>
               <label>Effects <input type="range" min="0" max="100" value={Math.round(sound.effects * 100)} onChange={event => changeSound({ ...sound, effects: Number(event.target.value) / 100 })} /><output>{Math.round(sound.effects * 100)}%</output></label>
-              <p className="mine-help">Sound starts only when you enable it. Your levels are remembered; audio pauses when this tab is hidden.</p>
+              <p className="mine-help">Sound is enabled by default and starts after your first interaction. Your mute choice and levels are remembered; audio pauses when this tab is hidden.</p>
               {audioFailed && <p role="status">Some audio could not play. You can continue exploring silently or toggle sound to retry.</p>}
               <a href="/mine/audio/CREDITS.txt" target="_blank" rel="noreferrer">Audio credits ↗</a>
             </fieldset>

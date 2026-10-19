@@ -5,6 +5,7 @@ begin
   if not exists (select 1 from public.admin_users where user_id = (select auth.uid())) then
     raise exception 'Administrator access required' using errcode = '42501';
   end if;
+  perform 1 from public.projects where id = any(ordered_ids) for update;
   if ordered_ids is null or cardinality(ordered_ids) = 0 or
     cardinality(ordered_ids) <> (select count(distinct id) from unnest(ordered_ids) as t(id)) or
     cardinality(ordered_ids) <> (select count(*) from public.projects where id = any(ordered_ids) and published and slug <> 'mewdi-pixel-sprite') then
