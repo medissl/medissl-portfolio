@@ -1,5 +1,6 @@
 node_modules
 .next
+.next-cms-test
 out
 .env*
 !.env.example

@@ -1,0 +1,45 @@
+{
+  "environment": "Local in-app browser; no physical-device test or GPU timer",
+  "firstFracturePass": {
+    "samples": 180,
+    "frameMedian": 16.8,
+    "frameP95": 33.4,
+    "callbackP95": 2.3,
+    "conditions": "Two active browser scenes; not a controlled benchmark"
+  },
+  "finalSingleActiveScene": {
+    "profile": {
+      "samples": 180,
+      "frameMedian": 16.699999999982538,
+      "frameP95": 16.800000000017462,
+      "callbackP95": 1.5
+    },
+    "scene": {
+      "coverCache": "2",
+      "displayFragments": "29",
+      "drawCalls": "179",
+      "geometries": "166",
+      "journeyTime": "0.00",
+      "phase": "ready",
+      "quality": "adaptive",
+      "station": "sakiko",
+      "textures": "6",
+      "tileCount": "2",
+      "triangles": "121038",
+      "wallCount": "2"
+    },
+    "conditions": "Other scene paused; adaptive DPR active; frame interval and callback time, not GPU duration"
+  },
+  "finalBuildSmokeSample": {
+    "date": "2026-10-19",
+    "samples": 60,
+    "frameMedian": 16.7,
+    "frameP95": 16.8,
+    "callbackP95": 3.9,
+    "quality": "full",
+    "textures": 5,
+    "drawCalls": 178,
+    "triangles": 121036,
+    "conditions": "One active scene in a fresh local browser session; no physical-device or GPU-duration measurement"
+  }
+}

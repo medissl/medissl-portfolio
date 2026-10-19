@@ -1,0 +1,46 @@
+[
+  {
+    "title": "Virgin Mary Fanart",
+    "slug": "virgin-mary-fanart",
+    "category": "Digital Art",
+    "short_description": "Virgin Mary fanart inspired by Junji Itto comic artsyle",
+    "description": "My first attempt at serious digital artwork using a drawing tablet. inspired by the bible verse and horror greyscale artsyle.",
+    "tools": [
+      "Clip Studio Paint"
+    ],
+    "cover_path": "10868e19-f4b3-4f93-bc41-441992378a46/8be03496-b30e-4eb1-a049-556670796573/cover-c43cb866-3958-4fc5-bf4c-697b187d6aaa-virgin-mary-manga-illus.jpg"
+  },
+  {
+    "title": "Marina Takopi Fanart",
+    "slug": "marina-takopi-fanart",
+    "category": "Digital Art",
+    "short_description": "Silly quick drawing",
+    "description": "The anime is very cool",
+    "tools": [
+      "Clip Studio Paint"
+    ],
+    "cover_path": "10868e19-f4b3-4f93-bc41-441992378a46/5bc8345e-cafc-4ad2-9d03-1681928dd8dd/cover-2e9cc107-51fe-48e7-b84e-c776484b509e-marina-takopi.jpg"
+  },
+  {
+    "title": "Mewdi pixel sprite",
+    "slug": "mewdi-pixel-sprite",
+    "category": "Digital Art",
+    "short_description": "Main character of my WIP game",
+    "description": "maybe someday i can finish Ivy Valley",
+    "tools": [
+      "Aseprite"
+    ],
+    "cover_path": "10868e19-f4b3-4f93-bc41-441992378a46/c6c8eacb-9bef-4626-a754-566c9cdb13dc/cover-0cb94b9d-c9dd-49a9-8904-99bab32866ee-mewdi.png"
+  },
+  {
+    "title": "Quick self potrait sketch",
+    "slug": "quick-self-potrait-sketch",
+    "category": "Traditional Art",
+    "short_description": "This took 5 minutes, very cool",
+    "description": "",
+    "tools": [
+      "Paper and pen"
+    ],
+    "cover_path": "10868e19-f4b3-4f93-bc41-441992378a46/ab96a4ba-d03f-4010-9018-286ce38a6ede/cover-3fa9fd19-1f2d-4422-ac91-b5ea0a51fac6-illustration4.jpg"
+  }
+]

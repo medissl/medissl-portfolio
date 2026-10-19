@@ -1,14 +1,16 @@
 import Link from "next/link";
+import "./mine/mine.css";
 
 export default function NotFound() {
   return (
-    <section className="page shell">
-      <div className="empty-state">
-        <p className="eyebrow">404 / SIGNAL LOST</p>
-        <h1>This page wandered off.</h1>
-        <p className="muted">The link may be old, unpublished, or just imaginary.</p>
-        <Link href="/" className="button button--primary">Return home</Link>
+    <main className="mine mine-error">
+      <div>
+        <p className="mine-kicker">404 · A passage not on this map</p>
+        <h1>This work isn’t available.</h1>
+        <p>The link may have changed, or the work may no longer be published.</p>
+        <Link href="/" className="mine-primary">Return to the mine</Link>
+        <Link href="/?view=projects" className="mine-text-link">Browse published work</Link>
       </div>
-    </section>
+    </main>
   );
 }

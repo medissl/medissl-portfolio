@@ -9,8 +9,8 @@ export default function AdminPage() {
         <p className="eyebrow">DASHBOARD</p>
         <h1>Keep the portfolio alive.</h1>
         <p className="muted">
-          Add new work, keep unfinished pieces as drafts, choose what appears on
-          the home page, and publish whenever it feels ready.
+          Publish new work as discoverable mine stations, keep drafts private,
+          and manage artwork, media and the collection order.
         </p>
         <div className="admin-dashboard-links">
           <Link className="admin-link-card" href="/admin/projects">

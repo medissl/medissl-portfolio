@@ -1,0 +1,30 @@
+[
+  {
+    "coverCache": "4",
+    "displayFragments": "29",
+    "drawCalls": "178",
+    "geometries": "165",
+    "journeyTime": "4.51",
+    "phase": "ready",
+    "quality": "full",
+    "station": "sakiko",
+    "textures": "5",
+    "tileCount": "2",
+    "triangles": "121036",
+    "wallCount": "2"
+  },
+  {
+    "coverCache": "4",
+    "displayFragments": "28",
+    "drawCalls": "189",
+    "geometries": "164",
+    "journeyTime": "4.51",
+    "phase": "ready",
+    "quality": "full",
+    "station": "sakiko",
+    "textures": "5",
+    "tileCount": "2",
+    "triangles": "237008",
+    "wallCount": "2"
+  }
+]

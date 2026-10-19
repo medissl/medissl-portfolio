@@ -1,0 +1,4 @@
+Self-hosted Latin subsets from Google Fonts (retrieved 19 October 2026).
+Cormorant Garamond: https://fonts.google.com/specimen/Cormorant+Garamond
+DM Sans: https://fonts.google.com/specimen/DM+Sans
+Unmodified font binaries; SIL Open Font License 1.1 texts accompany them.

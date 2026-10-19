@@ -1,0 +1,172 @@
+{
+  "projects": [
+    {
+      "id": "sakiko",
+      "title": "SAKIKO",
+      "kind": "Games",
+      "type": "First-person horror · Windows",
+      "image": "sakiko-menu.png",
+      "second": "sakiko-corridor-night.png",
+      "text": "A Japanese school after dark. Explore the empty halls, piece together the evidence, and find a way out.",
+      "role": "Game development",
+      "tech": "Godot / GDScript / Windows",
+      "repo": "https://github.com/medissl/SAKIKO",
+      "link": "https://github.com/medissl/SAKIKO/releases",
+      "evidence": [
+        "First-person exploration, object inspection and a journal.",
+        "Connected classroom routes and a hand-operated shutter.",
+        "Eight task checkpoints retain completed tasks when retrying."
+      ]
+    },
+    {
+      "id": "jellink",
+      "title": "Jellink",
+      "kind": "Games",
+      "type": "Physics puzzle · Android + browser",
+      "image": "jellink-game.png",
+      "second": "jellink-menu.png",
+      "shape": "portrait",
+      "color": "#dce6ce",
+      "link": "https://jellink.vercel.app",
+      "repo": "https://github.com/medissl/jellink",
+      "text": "Drop, link, and pop soft-body jellies. A custom physics puzzle made for one-thumb play.",
+      "role": "Game design, physics, rendering, audio, Android and web development",
+      "tech": "Java / Canvas 2D / JavaScript / Supabase",
+      "evidence": [
+        "Custom collision and pressure-driven jelly deformation.",
+        "Native Android drawing and audio; no WebView.",
+        "Offline solo, optional Versus and shared-jar Co-op."
+      ]
+    },
+    {
+      "id": "maucuan",
+      "title": "MauCuan",
+      "kind": "Software",
+      "type": "Finance + habit app · Android",
+      "image": "maucuan-home.png",
+      "second": "maucuan-miko.png",
+      "shape": "portrait",
+      "color": "#e2efec",
+      "link": "https://maucuan-finance.vercel.app",
+      "repo": "https://github.com/medissl/MauCuan",
+      "text": "An Indonesian money tracker with receipt scanning, savings goals, and Miko, a virtual companion.",
+      "role": "Mobile application development and interface design",
+      "tech": "React Native / Expo / Supabase",
+      "evidence": [
+        "On-device receipt reading with review before saving.",
+        "Transactions, savings goals and an Android widget.",
+        "A virtual companion connected to daily habits."
+      ]
+    },
+    {
+      "id": "shoot",
+      "title": "Shoot a Boss",
+      "kind": "Games",
+      "type": "Notebook-style FPS · Browser",
+      "image": "shoot-game.png",
+      "shape": "wide",
+      "color": "#e6eaf5",
+      "link": "https://shoot-a-boss.vercel.app",
+      "repo": "https://github.com/medissl/shoot-a-boss",
+      "text": "An office worker’s notebook dream becomes a first-person campaign against paperwork monsters.",
+      "role": "Gameplay systems, rendering, UI, progression and game development",
+      "tech": "React / TypeScript / Three.js / Rapier",
+      "evidence": [
+        "Twelve-stage campaign and five map themes.",
+        "Weapons, cards, magic and persistent progression.",
+        "Hand-drawn visual language with desktop and touch controls."
+      ]
+    },
+    {
+      "id": "wildfeast",
+      "title": "Wildfeast: Isles of Wonder",
+      "kind": "Games",
+      "type": "Exploration + restaurant game · In development",
+      "image": "wildfeast-outdoor.png",
+      "second": "wildfeast-indoor.png",
+      "shape": "wide",
+      "color": "#d4dfca",
+      "repo": "https://github.com/medissl/wildfeast-isles-of-wonder",
+      "text": "Explore a strange food world, bring ingredients home, and run a small restaurant.",
+      "role": "A personal game in development",
+      "tech": "Windows / Offline / Single-player",
+      "evidence": [
+        "A loop connecting exploration, gathering, cooking and serving.",
+        "Playable fishing, farming, cooking and restaurant service.",
+        "Art, maps and creatures remain in development."
+      ]
+    },
+    {
+      "id": "rundori",
+      "title": "Rundori Receipt Web",
+      "kind": "Software",
+      "type": "Staff order management + private receipts",
+      "image": "rundori-logo.png",
+      "shape": "logo",
+      "color": "#e8efdd",
+      "repo": "https://github.com/medissl/rundori-receipt-web",
+      "text": "Order management and private digital receipts for a shoe-care studio.",
+      "role": "Web application and receipt workflow development",
+      "tech": "Next.js / TypeScript / Supabase / Cloudflare R2",
+      "evidence": [
+        "Staff allowlist and server-side authorization.",
+        "Expiring, revocable customer receipt links.",
+        "Private before/after photos delivered with signed URLs."
+      ]
+    }
+  ],
+  "artwork": [
+    {
+      "id": "mary",
+      "title": "Virgin Mary Fanart",
+      "kind": "Artwork",
+      "type": "Digital illustration · Clip Studio Paint",
+      "image": "virgin-mary-fanart.jpg",
+      "shape": "wide",
+      "color": "#e7e7e7",
+      "repo": "https://medissl-portfolio.vercel.app/work/virgin-mary-fanart",
+      "text": "A first serious drawing-tablet piece, exploring biblical imagery and horror greyscale illustration.",
+      "role": "Digital illustration",
+      "tech": "Clip Studio Paint",
+      "evidence": [
+        "Original published artwork.",
+        "Bible-verse imagery and greyscale horror influence.",
+        "Shown as a complete image, rather than a decorative crop."
+      ]
+    },
+    {
+      "id": "marina",
+      "title": "Marina Takopi Fanart",
+      "kind": "Artwork",
+      "type": "Digital drawing · Clip Studio Paint",
+      "image": "marina-takopi-fanart.jpg",
+      "shape": "portrait",
+      "color": "#ebebeb",
+      "repo": "https://medissl-portfolio.vercel.app/work/marina-takopi-fanart",
+      "text": "A quick character drawing inspired by the anime.",
+      "role": "Digital illustration",
+      "tech": "Clip Studio Paint",
+      "evidence": [
+        "Original published drawing.",
+        "A short character study."
+      ]
+    },
+    {
+      "id": "self",
+      "title": "Quick self portrait sketch",
+      "kind": "Artwork",
+      "type": "Traditional drawing · Paper and pen",
+      "image": "quick-self-potrait-sketch.jpg",
+      "shape": "portrait",
+      "color": "#e5e2dc",
+      "repo": "https://medissl-portfolio.vercel.app/work/quick-self-potrait-sketch",
+      "text": "A five-minute self portrait in pen.",
+      "role": "Traditional drawing",
+      "tech": "Paper and pen",
+      "evidence": [
+        "Original published sketch.",
+        "A quick observational drawing."
+      ]
+    }
+  ]
+}

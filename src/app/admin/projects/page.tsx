@@ -12,12 +12,12 @@ import { AdminGuard } from "@/components/admin-guard";
 import { getBrowserSupabase } from "@/lib/supabase";
 import type { Project } from "@/lib/types";
 
-function compareCarouselOrder(a: Project, b: Project) {
-  if (a.carousel_order !== b.carousel_order) {
-    return a.carousel_order - b.carousel_order;
+function compareStationOrder(a: Project, b: Project) {
+  if (a.display_order !== b.display_order) {
+    return a.display_order - b.display_order;
   }
 
-  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime() || a.id.localeCompare(b.id);
 }
 
 function ProjectList() {
@@ -45,20 +45,15 @@ function ProjectList() {
     void load();
   }, [supabase]);
 
-  const carouselProjects = useMemo(() => {
+  const stationProjects = useMemo(() => {
     const live = projects.filter((project) => project.published);
-    const featured = live.filter((project) => project.featured);
-    return [...(featured.length ? featured : live)].sort(compareCarouselOrder);
+    return live.filter(project => project.slug !== "mewdi-pixel-sprite").sort(compareStationOrder);
   }, [projects]);
 
-  const carouselUsesFeatured = projects.some(
-    (project) => project.published && project.featured,
-  );
-
-  async function moveCarouselProject(projectId: string, direction: -1 | 1) {
+  async function moveStationProject(projectId: string, direction: -1 | 1) {
     if (reordering) return;
 
-    const currentIndex = carouselProjects.findIndex(
+    const currentIndex = stationProjects.findIndex(
       (project) => project.id === projectId,
     );
     const nextIndex = currentIndex + direction;
@@ -66,12 +61,12 @@ function ProjectList() {
     if (
       currentIndex < 0 ||
       nextIndex < 0 ||
-      nextIndex >= carouselProjects.length
+      nextIndex >= stationProjects.length
     ) {
       return;
     }
 
-    const reordered = [...carouselProjects];
+    const reordered = [...stationProjects];
     [reordered[currentIndex], reordered[nextIndex]] = [
       reordered[nextIndex],
       reordered[currentIndex],
@@ -87,18 +82,18 @@ function ProjectList() {
         const nextOrder = orderById.get(project.id);
         return nextOrder === undefined
           ? project
-          : { ...project, carousel_order: nextOrder };
+          : { ...project, display_order: nextOrder, carousel_order: nextOrder };
       }),
     );
 
     setReordering(true);
-    setStatus("Saving carousel order…");
+    setStatus("Saving station order…");
 
     const results = await Promise.all(
       reordered.map((project, index) =>
         supabase
           .from("projects")
-          .update({ carousel_order: index })
+          .update({ display_order: index, carousel_order: index })
           .eq("id", project.id),
       ),
     );
@@ -109,7 +104,7 @@ function ProjectList() {
       setProjects(previousProjects);
       setStatus(failed.error.message);
     } else {
-      setStatus("Carousel order saved.");
+      setStatus("Station order saved.");
       window.setTimeout(() => setStatus(""), 1400);
     }
 
@@ -128,31 +123,28 @@ function ProjectList() {
           <h1>Everything in one place.</h1>
           <p className="muted">
             Open an item to edit it, change its visibility, update its media,
-            or control the homepage carousel order.
+            or change the order of published stations.
           </p>
         </div>
       </div>
 
       {status && <p className="form-message">{status}</p>}
 
-      {carouselProjects.length > 0 && (
+      {stationProjects.length > 0 && (
         <section className="carousel-order-panel">
           <div className="carousel-order-panel__head">
             <div>
-              <p className="eyebrow">HOMEPAGE CAROUSEL</p>
-              <h2>Choose what appears first.</h2>
+              <p className="eyebrow">PUBLISHED CMS STATIONS</p>
+              <h2>Order the collection.</h2>
               <p>
-                New work can still start at the front by default. Use these
-                arrows whenever you want to override that order.
-                {carouselUsesFeatured
-                  ? " Only live Featured projects are currently in the carousel."
-                  : " No Featured projects are live, so the carousel is using published work."}
+                Published work becomes stations after the curated GitHub projects.
+                Use the arrows to change its order. Drafts stay private. The excluded Mewdi sprite remains outside the public collection.
               </p>
             </div>
           </div>
 
           <div className="carousel-order-list">
-            {carouselProjects.map((project, index) => (
+            {stationProjects.map((project, index) => (
               <div className="carousel-order-row" key={project.id}>
                 <span className="carousel-order-index">
                   {String(index + 1).padStart(2, "0")}
@@ -166,14 +158,14 @@ function ProjectList() {
                   <span>
                     {project.category}
                     {project.featured ? " · Featured" : ""}
-                    {index < 6 ? " · In carousel" : " · Queued"}
+                    {" · Published station"}
                   </span>
                 </Link>
 
                 <div className="carousel-order-actions">
                   <button
                     type="button"
-                    onClick={() => void moveCarouselProject(project.id, -1)}
+                    onClick={() => void moveStationProject(project.id, -1)}
                     disabled={reordering || index === 0}
                     aria-label={`Move ${project.title} earlier`}
                     title="Move earlier"
@@ -182,9 +174,9 @@ function ProjectList() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => void moveCarouselProject(project.id, 1)}
+                    onClick={() => void moveStationProject(project.id, 1)}
                     disabled={
-                      reordering || index === carouselProjects.length - 1
+                      reordering || index === stationProjects.length - 1
                     }
                     aria-label={`Move ${project.title} later`}
                     title="Move later"
