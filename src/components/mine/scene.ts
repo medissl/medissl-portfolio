@@ -294,7 +294,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   }
   function bindWall(wall: Wall, projectIndex: number, z: number) {
     const project = projects[projectIndex], revision = ++wall.revision;
-    wall.group.position.z = z; wall.group.visible = true;
+    wall.group.position.set(0, project.id === "jellink" ? 0.3 : 0, z); wall.group.visible = true;
     wall.mount.position.set(0, 0, 0); wall.mount.rotation.set(0, 0, 0); wall.seams.visible = true;
     wall.chunks.forEach((chunk, i) => { chunk.position.copy(wall.origins[i]); chunk.rotation.set(0, 0, 0); });
     wall.cracks.visible = true; (wall.cracks.material as THREE.LineBasicMaterial).opacity = 0; wall.cracks.geometry.setDrawRange(0, 0);
