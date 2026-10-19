@@ -77,6 +77,7 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
     if (url.href !== window.location.href) window.history.pushState(null, "", url);
   }
   function open(next: Panel, index = station) {
+    audio.current?.ui();
     if (next === "settings" && !unlocked) setSound({ ...savedSound(), enabled: false });
     if (!dialog.current?.open) opener.current = document.activeElement as HTMLElement;
     if (next === "project") { select(index); setDetail(index); }
@@ -162,6 +163,7 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
         engine.current = createMine(host.current, {
           station: index => { selected.current = index; setStation(index); },
           phase: setPhase, inspect: () => inspectRef.current(), failed: () => setFailed(true),
+          audio: frame => audio.current?.frame(frame),
         }, preference.matches, catalog.current, selected.current);
         engine.current.pause(Boolean(dialog.current?.open));
       } catch { if (!cancelled) setFailed(true); }
@@ -186,6 +188,7 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
   }, [station, projects]);
   function close() { dialog.current?.close(); }
   function onClose() {
+    audio.current?.ui();
     setPanel(null); engine.current?.pause(false); opener.current?.focus();
     if (new URLSearchParams(window.location.search).has("panel")) navigate(null, selected.current);
   }

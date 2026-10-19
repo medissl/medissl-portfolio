@@ -1,19 +1,61 @@
 MEDISSL Crystal Mine audio
 
+ACTIVE RECORDINGS
+
 Music: Mysterious Cave Theme Loop — beardalaxy
 https://opengameart.org/content/mysterious-cave-theme-loop
-Source: cave_in_game.ogg; distributed here as cave.ogg, unchanged.
+License: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+Source cave_in_game.ogg is distributed as cave.ogg unchanged.
+Decoded playback uses a 300ms tail/head crossfade for continuous looping.
 
-Motor: Generator (loop) — YCbCr
-https://opengameart.org/content/generator-loop
-Source: loop_generator_1.mp3; distributed here as motor.mp3, unchanged.
-Used as short, phase-bounded playback, not as a seamless loop.
+Wheels: Office Chair Roll Sfx Sound Effect — Nicole Marie T
+Sound Effect By Nicole Marie T
+https://opengameart.org/content/office-chair-roll-sfx-sound-effect
+License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Source Office Chair Roll Sfx.wav. wheels.wav is a mono 44.1kHz PCM conversion,
+high-pass 65Hz / low-pass 5200Hz. Runtime 50ms loop crossfade and speed/gain variation.
+Attribution is required and is provided here and in the repository README.
 
-Mining, metal and bell effects: Impact Sounds 1.0 — Kenney
+Drill motor: Drill 1 — dklon
+https://opengameart.org/content/drill-1
+License: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
+Actual Black & Decker cordless drill recorded with a Zoom recorder.
+Source cordless_drill_1.wav. drill-motor.wav uses seconds 2.5–5.5,
+mono 44.1kHz PCM, high-pass 60Hz / low-pass 7000Hz.
+Runtime 50ms loop crossfade, animation-driven pitch/gain.
+Credit: dklon. Attribution required and provided here and in README.
+
+Masonry contact: drilling.wav — marvman
+https://freesound.org/people/marvman/sounds/34643/
+License: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+Actual recording of an electrician drilling into a wall.
+Source: publicly accessible high-quality MP3 preview, 34643_111012-hq.mp3.
+drill-contact.wav uses seconds 13–16, mono 44.1kHz PCM, gain 0.28,
+high-pass 70Hz / low-pass 7000Hz; runtime 50ms loop crossfade.
+
+Stone destruction: Rock destroy — Bertsz
+https://freesound.org/people/Bertsz/sounds/524312/
+License: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+Source: publicly accessible high-quality MP3 preview, 524312_6714882-hq.mp3.
+rock-break.wav uses the first 1.1 seconds (remaining source is silence),
+mono 44.1kHz PCM, gain 0.6, final 100ms fade.
+Short portions accompany cracks/debris; the full impact accompanies fracture.
+These are the openly served preview encodings, not the login-only original WAVs.
+
+Navigation chime: Impact Sounds 1.0 — Kenney
 https://kenney.nl/assets/impact-sounds
-Selected original OGG files, unchanged. Playback gain/rate varies in the app.
+CC0 1.0. Original impactBell_heavy_000.ogg unchanged. Low-gain, higher-pitch
+short playback on menu open, project selection and close; no hover or stacked voices.
 
-All these assets are offered by their authors under CC0 1.0:
-https://creativecommons.org/publicdomain/zero/1.0/
-Attribution is optional; included with thanks to the creators.
-Source pages and Kenney's bundled license reviewed 19 October 2026.
+LEGACY ASSETS RETAINED, NO LONGER PLAYED BY THE CURRENT CONTROLLER
+
+Generator (loop) — YCbCr
+https://opengameart.org/content/generator-loop
+CC0 1.0. Source loop_generator_1.mp3, retained unchanged as motor.mp3.
+
+Mining and metal effects: Impact Sounds 1.0 — Kenney
+https://kenney.nl/assets/impact-sounds
+CC0 1.0. Selected original OGG files retained unchanged.
+
+License/source pages reviewed 19 October 2026. CC0 attribution is optional;
+CC BY attribution for Nicole Marie T and dklon is required as credited above.

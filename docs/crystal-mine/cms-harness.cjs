@@ -14,7 +14,7 @@ const tokens = new Map(), writes = [];
 let uploads = 0;
 const upstreamPort = Number(process.env.MINE_TEST_PORT || 3006);
 function json(res,data,status=200) { res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data)); }
-const clientProbe = `<script>
+const clientProbe = `<script>${fs.readFileSync(path.join(__dirname,'audio-probe.js'),'utf8')}</script><script>
 const context=HTMLCanvasElement.prototype.getContext;let contextCount=0;
 HTMLCanvasElement.prototype.getContext=function(type,...args){if(/^webgl/.test(type)){contextCount++;document.documentElement.dataset.webglContexts=String(contextCount);if(new URLSearchParams(location.search).get('test-webgl')==='off')return null;}return context.call(this,type,...args);};
 window.addEventListener('message',e=>{if(e.origin!==location.origin||e.data!=='refresh-catalog')return;Object.defineProperty(document,'hidden',{configurable:true,value:false});window.dispatchEvent(new Event('focus'));});

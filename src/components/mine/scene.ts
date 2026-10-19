@@ -3,9 +3,10 @@ import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometr
 import type { MineProject } from "./projects";
 import { journeyAt, nextStation, advanceSceneryTile } from "./journey";
 import { clipDisplay } from "./fracture";
+import type { AudioFrame } from "./audio";
 
 export type MineEngine = { advance: () => void; skip: () => void; jump: (index: number) => void; catalog: (projects: MineProject[]) => void; pause: (value: boolean) => void; motion: (reduced: boolean) => void; dispose: () => void };
-type Events = { station: (index: number) => void; phase: (phase: string) => void; inspect: () => void; failed: () => void };
+type Events = { station: (index: number) => void; phase: (phase: string) => void; inspect: () => void; failed: () => void; audio: (frame: AudioFrame) => void };
 const smooth = (v: number) => { const t = THREE.MathUtils.clamp(v, 0, 1); return t * t * (3 - 2 * t); };
 
 export function createMine(host: HTMLElement, events: Events, reduced: boolean, projects: MineProject[], initialStation = 0): MineEngine {
@@ -353,6 +354,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   let slowFrames = 0, qualityReduced = false;
   const setPhase = (s: string) => { if (phase !== s) { phase = s; host.dataset.phase = s; events.phase(s); } };
   const finish = () => {
+    events.audio({ moving: false, elapsed: 0, speed: 0 });
     moving = false; station = nextStation(station, projects.length); cameraZ = 7;
     // Rebase the arriving chamber and camera together: identical framing with no
     // growing world coordinates. Recycle the consumed wall behind the next wall.
@@ -366,6 +368,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   };
   const jump = (index: number) => {
     if (!Number.isInteger(index) || index < 0 || index >= projects.length) return;
+    events.audio({ moving: false, elapsed: 0, speed: 0 });
     moving = false; elapsed = 0; station = index; cameraZ = 7;
     scenery[0].position.z = index % 2 ? 24 : 0; scenery[1].position.z = index % 2 ? -24 : -48;
     dustMat.opacity = 0.23; dustMat.size = 0.035;
@@ -391,6 +394,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     if (moving) {
       elapsed += dt; bit.rotation.z += dt * (12 + smooth(elapsed / 0.5) * 24);
       const journey = journeyAt(elapsed);
+      events.audio({ moving: true, elapsed, speed: dt > 0 ? Math.abs(journey.cameraZ - cameraZ) / dt : 0 });
       cameraZ = journey.cameraZ;
       setPhase(journey.phase);
       const wall = walls[0];
@@ -440,6 +444,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     // Rebind the same two image-bearing walls. Terrain, lights and renderer survive.
     jump(Math.max(0, projects.findIndex(project => project.id === id)));
   }, pause: v => { paused = v; }, motion: value => { reduced = value; if (reduced && moving) finish(); }, dispose: () => {
+    events.audio({ moving: false, elapsed: 0, speed: 0 });
     disposed = true; cancelAnimationFrame(frame); observer.disconnect(); host.removeEventListener("pointermove", pointer); renderer.domElement.removeEventListener("click", click); renderer.domElement.removeEventListener("webglcontextlost", lost);
     const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>();
     scene.traverse(o => { if (o instanceof THREE.Mesh || o instanceof THREE.Points || o instanceof THREE.LineSegments) { geometries.add(o.geometry); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => materials.add(m)); } });
