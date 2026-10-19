@@ -1,6 +1,16 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
-:root { --max:1180px; background:#182327; color:#eee5d3; font-family:Arial,Helvetica,sans-serif; }
+:root {
+  --max:1180px;
+  --font-display:"Medissl Display",Georgia,serif;
+  --font-body:"Medissl Sans",Arial,Helvetica,sans-serif;
+  --surface:#10221d; --surface-raised:#172b24; --surface-well:#0b1713;
+  --ivory:#f2eee5; --secondary:#b7c2b9; --champagne:#d2c09b;
+  --rule:#3b4b40; --focus:#e4cf9f;
+  background:#182327; color:var(--ivory); font-family:var(--font-body);
+  font-synthesis:none; text-rendering:optimizeLegibility;
+}
 * { box-sizing:border-box; }
 html,body { width:100%; max-width:100%; overflow-x:clip; }
 html { scroll-behavior:smooth; }

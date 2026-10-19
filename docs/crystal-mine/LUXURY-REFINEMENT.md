@@ -21,3 +21,7 @@ Direction: a quiet private gallery inside an atmospheric mineral world. Cormoran
 2. Shared tokens and public HUD, collection, details, About/contact, settings, fallback/error/loading. Station nameplates receive typography only, outside the protected environment block; no geometry/material/mechanics change.
 3. Related practical Studio typography, fields, ordering/media controls and feedback.
 4. Actual desktop/mobile/laptop review, accessibility and mechanics/CMS regression checks, build/lint/types and local checkpoints.
+
+## Public refinement
+
+Implemented shared local typefaces/tokens, refined HUD hierarchy and visible desktop keyboard hint, simpler neutral-edged overlays, asymmetrical Projects opening row, dark media wells, consistent detail/action styling, artwork/gallery treatment, About/contact rhythm, settings, fallback/error and loading. Hover/focus states use the same champagne/ivory hierarchy. The scene diff changes only canvas font selection for titles and category labels; all geometry, material values, image UVs, wall positions and fracture logic remain untouched. Fonts load alongside the scene module, with fallback on failure. Desktop browser confirmed both fonts actually loaded. An initial About review exposed contact falling below the opening viewport; reduced title scale and contact spacing instead of removing meaningful content. Typecheck and approved environment test pass. Mobile review follows before final production verification.

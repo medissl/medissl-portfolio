@@ -152,7 +152,11 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const start = async () => {
       try {
-        const { createMine } = await import("./scene");
+        const [{ createMine }] = await Promise.all([
+          import("./scene"),
+          document.fonts.load('500 32px "Medissl Display"').catch(() => []),
+          document.fonts.load('400 16px "Medissl Sans"').catch(() => []),
+        ]);
         if (cancelled || !host.current) return;
         setReduced(preference.matches);
         engine.current = createMine(host.current, {
@@ -211,9 +215,9 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
           event.preventDefault(); select(0); navigate(null, 0);
         }}>MEDISSL</Link>
         <nav aria-label="Portfolio">
-          <button aria-haspopup="dialog" onClick={() => open("index")}>Projects</button>
-          <button aria-haspopup="dialog" onClick={() => open("about")}>About</button>
-          <button aria-haspopup="dialog" onClick={() => open("settings")}>Settings</button>
+          <button aria-haspopup="dialog" aria-expanded={panel === "index"} onClick={() => open("index")}>Projects</button>
+          <button aria-haspopup="dialog" aria-expanded={panel === "about"} onClick={() => open("about")}>About</button>
+          <button aria-haspopup="dialog" aria-expanded={panel === "settings"} onClick={() => open("settings")}>Settings</button>
           <button aria-pressed={unlocked && sound.enabled} onClick={() => changeSound({ ...(unlocked ? sound : savedSound()), enabled: !unlocked || !sound.enabled })}>
             {unlocked && sound.enabled ? "Sound on" : "Sound off"}
           </button>
@@ -230,15 +234,16 @@ export function MineExperience({ projects: initialProjects, lightweight = false,
           <div className="mine-caption">
             <span className="mine-count">{String(station + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
             <h1><button className="mine-inspect" aria-label={`Inspect ${current.title}`} onClick={() => open("project")} disabled={moving}>
-              {current.title}
+              {current.title}<span aria-hidden="true">↗</span>
             </button></h1>
           </div>
           <div className="mine-drive">
-            <p className="mine-sr" role="status">{moving
+            <p className="mine-travel-status" role="status">{moving
               ? phase === "drilling" ? "Drilling…" : phase === "breaking" ? "Breaking through…" : "Onward…"
               : reduced ? "Reduced motion: instant travel" : "W / ↑ to advance"}</p>
             <button className="mine-primary" disabled={phase === "loading" || moving} onClick={() => engine.current?.advance()}>
               {moving ? "Drilling…" : lastStation ? "Return to the start" : reduced ? "Next project" : "Drill onward"}
+              <span aria-hidden="true">→</span>
             </button>
           </div>
         </footer>

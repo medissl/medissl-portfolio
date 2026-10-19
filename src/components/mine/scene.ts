@@ -265,10 +265,10 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const inset = (width - imageWidth) / 2 * scale;
     if (image) ctx.drawImage(image, inset, inset, imageWidth * scale, imageHeight * scale);
     ctx.fillStyle = art ? "#302c24" : "#f1e6cf"; ctx.textAlign = "center";
-    let size = 0.28; ctx.font = `500 ${size * scale}px Arial`;
-    while (ctx.measureText(project.title).width > canvas.width - 32 && size > 0.08) { size -= 0.01; ctx.font = `500 ${size * scale}px Arial`; }
+    let size = 0.28; ctx.font = `500 ${size * scale}px "Medissl Display"`;
+    while (ctx.measureText(project.title).width > canvas.width - 32 && size > 0.08) { size -= 0.01; ctx.font = `500 ${size * scale}px "Medissl Display"`; }
     if (!image) ctx.fillText(project.title, canvas.width / 2, drawHeight * 0.48);
-    if (!image) { ctx.font = `${0.12 * scale}px Arial`; ctx.fillStyle = "#c4b797"; ctx.fillText(project.category, canvas.width / 2, drawHeight * 0.64); }
+    if (!image) { ctx.font = `${0.12 * scale}px "Medissl Sans"`; ctx.fillStyle = "#c4b797"; ctx.fillText(project.category, canvas.width / 2, drawHeight * 0.64); }
     wall.surface.needsUpdate = true;
     wall.surround.position.y = centerY;
     wall.surround.scale.set(width + 0.15, height + 0.15, 1);
@@ -277,9 +277,9 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     titleContext.fillStyle = "#222e2c"; titleContext.fillRect(0, 0, 1024, 180);
     titleContext.strokeStyle = "#b39b6d"; titleContext.lineWidth = 3; titleContext.strokeRect(8, 8, 1008, 164);
     titleContext.fillStyle = "#efe5cc"; titleContext.textAlign = "center";
-    let titleSize = 58; titleContext.font = `500 ${titleSize}px Arial`;
-    while (titleContext.measureText(project.title).width > 950 && titleSize > 24) titleContext.font = `500 ${--titleSize}px Arial`;
-    titleContext.fillText(project.title, 512, 88); titleContext.font = "26px Arial"; titleContext.fillStyle = "#baa780"; titleContext.fillText(project.category, 512, 140); wall.title.needsUpdate = true;
+    let titleSize = 58; titleContext.font = `500 ${titleSize}px "Medissl Display"`;
+    while (titleContext.measureText(project.title).width > 950 && titleSize > 24) titleContext.font = `500 ${--titleSize}px "Medissl Display"`;
+    titleContext.fillText(project.title, 512, 88); titleContext.font = '400 26px "Medissl Sans"'; titleContext.fillStyle = "#baa780"; titleContext.fillText(project.category, 512, 140); wall.title.needsUpdate = true;
     wall.faces.forEach(face => { face.removeFromParent(); face.geometry.dispose(); }); wall.faces = [];
     wall.triangles.forEach((triangle, index) => {
       const polygon = clipDisplay(triangle, left, bottom, width, height);
