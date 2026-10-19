@@ -89,20 +89,11 @@ function ProjectList() {
     setReordering(true);
     setStatus("Saving station order…");
 
-    const results = await Promise.all(
-      reordered.map((project, index) =>
-        supabase
-          .from("projects")
-          .update({ display_order: index, carousel_order: index })
-          .eq("id", project.id),
-      ),
-    );
+    const { error } = await supabase.rpc("reorder_portfolio_stations", { ordered_ids: reordered.map(project => project.id) });
 
-    const failed = results.find((result) => result.error);
-
-    if (failed?.error) {
+    if (error) {
       setProjects(previousProjects);
-      setStatus(failed.error.message);
+      setStatus(error.message);
     } else {
       setStatus("Station order saved.");
       window.setTimeout(() => setStatus(""), 1400);
@@ -137,8 +128,8 @@ function ProjectList() {
               <p className="eyebrow">PUBLISHED CMS STATIONS</p>
               <h2>Order the collection.</h2>
               <p>
-                Published work becomes stations after the curated GitHub projects.
-                Use the arrows to change its order. Drafts stay private. The excluded Mewdi sprite remains outside the public collection.
+                Every published project and artwork becomes a station in this order.
+                Use the arrows to change it. Drafts stay private. The excluded Mewdi sprite remains outside the public collection.
               </p>
             </div>
           </div>

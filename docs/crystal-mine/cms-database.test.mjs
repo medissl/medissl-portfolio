@@ -30,7 +30,7 @@ await db.exec(`insert into auth.users values ('${owner}'),('${outsider}');
   insert into public.projects(id,slug,title,category,published,cover_path) values
     ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','old-art','Original artwork','Digital Art',true,'original/cover.jpg');
   insert into public.project_media(project_id,path) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','original/gallery.jpg');`);
-for (const file of readdirSync(migrations).filter(f=>f.endsWith('_unified_portfolio_content.sql')).sort()) await db.exec(readFileSync(new URL(file,migrations),'utf8'));
+for (const file of readdirSync(migrations).filter(f=>/^\d{14}_/.test(f) && !f.includes('import_curated')).sort()) await db.exec(readFileSync(new URL(file,migrations),'utf8'));
 const art = (await db.query("select * from public.projects where slug='old-art'")).rows[0];
 assert.equal(art.cover_path,'original/cover.jpg'); assert.equal(art.portrait,false);
 assert.equal((await db.query('select * from public.project_media')).rows.length,1);
@@ -42,11 +42,14 @@ await db.exec(`insert into public.projects(slug,title,category,published,platfor
 await as('anon'); assert.equal((await db.query('select * from public.projects')).rows.length,1,'draft hidden');
 await assert.rejects(db.exec("insert into public.projects(slug,title,category) values ('bad','No','Software')"),/permission|row-level security/i);
 await as('authenticated',outsider);
+await assert.rejects(db.exec("select public.reorder_portfolio_stations(array['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid])"),/Administrator access required/);
 assert.equal((await db.query("update public.projects set title='hacked' returning *")).rows.length,0);
 await assert.rejects(db.exec("insert into public.projects(slug,title,category) values ('bad','No','Software')"),/row-level security/i);
 await as('authenticated',owner);
 await assert.rejects(db.exec("update public.projects set demo_url='javascript:alert(1)' where slug='cms-software'"),/check constraint/i);
 await db.exec("update public.projects set published=true,display_order=-1 where slug='cms-software'");
+await db.exec("select public.reorder_portfolio_stations(array[(select id from public.projects where slug='cms-software'),'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid])");
+await assert.rejects(db.exec("select public.reorder_portfolio_stations(array['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid,'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid])"),/Station list changed/);
 await as('anon'); assert.equal((await db.query('select * from public.projects order by display_order')).rows[0].slug,'cms-software');
 await as('authenticated',owner); await db.exec("update public.projects set published=false where slug='cms-software'");
 await as('anon'); assert.equal((await db.query('select * from public.projects')).rows.length,1);

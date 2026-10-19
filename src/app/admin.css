@@ -617,3 +617,11 @@
  .admin-bar .muted { font-size:12px; overflow-wrap:anywhere; }
  .admin-bar .button { flex-shrink:0; padding:0 12px; }
 }
+.editor-panel fieldset {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  min-width: 0;
+}
+.editor-panel fieldset legend { padding: 0 .4rem; }
+.editor-panel fieldset label { display: grid; gap: .5rem; margin-bottom: 1rem; }

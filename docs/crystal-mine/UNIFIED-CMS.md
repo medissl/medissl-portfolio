@@ -19,7 +19,7 @@ The CMS-only loader requires server setting `MEDISSL_UNIFIED_CMS=true`; leave it
 ## Pending milestones
 
 - A complete: additive schema and content model; TypeScript, focused lint, protected environment test and real isolated Postgres migration/RLS tests passed. PGlite 0.5.10 is installed temporarily outside the app. The fixture supplies Supabase auth/storage primitives and grants; all repository migrations execute, except pgcrypto extension registration (built-in gen_random_uuid is used). Production inspection was SELECT-only.
-- B: conditional Studio editor, metadata/media management, station ordering.
+- B implemented: conditional software/game metadata, drafts by default, media presentation/alt fields and numeric order. Gallery upload retries retain the new draft ID and completed media; new drafts publish only after uploads finish. Removing references preserves original storage objects and shared local assets. Atomic security-invoker reorder RPC rejects outsiders, duplicates and stale/unpublished IDs. TypeScript, full lint and isolated Postgres/RLS/reorder tests passed. Browser verification follows with the unified fixture in C/D.
 - C: catalog import, verification tooling, unified loader and empty/outage states.
 - D: enabled sound preference, gesture unlock, saved mute preservation, browser/regression QA.
 

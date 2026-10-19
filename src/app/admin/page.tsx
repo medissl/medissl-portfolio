@@ -20,7 +20,7 @@ export default function AdminPage() {
           </Link>
           <Link className="admin-link-card" href="/admin/projects/new">
             <span className="admin-plus">+</span>
-            <div><strong>Add something new</strong><span>Art, UI/UX, interactive work, experiments</span></div>
+            <div><strong>Add something new</strong><span>Software, games, artwork and interactive work</span></div>
             <ArrowUpRight size={18} />
           </Link>
         </div>

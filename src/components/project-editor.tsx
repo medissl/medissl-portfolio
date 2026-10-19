@@ -17,6 +17,7 @@ import {
   saveDraftFiles,
 } from "@/lib/admin-draft";
 import { getBrowserSupabase, publicMediaUrl } from "@/lib/supabase";
+import { externalUrl, isArtwork } from "@/lib/content";
 import {
   PROJECT_CATEGORIES,
   type Project,
@@ -54,6 +55,16 @@ type FormState = {
   tools: string;
   featured: boolean;
   published: boolean;
+  platform: string;
+  features: string;
+  repository_url: string;
+  demo_url: string;
+  download_url: string;
+  action_label: string;
+  portrait: boolean;
+  mineral: string;
+  cover_alt: string;
+  display_order: number;
 };
 
 const initialForm: FormState = {
@@ -65,7 +76,9 @@ const initialForm: FormState = {
   year: new Date().getFullYear(),
   tools: "",
   featured: false,
-  published: true,
+  published: false,
+  platform: "", features: "", repository_url: "", demo_url: "", download_url: "",
+  action_label: "", portrait: false, mineral: "", cover_alt: "", display_order: 0,
 };
 
 export function ProjectEditor({ projectId }: { projectId?: string }) {
@@ -115,6 +128,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           setMedia((mediaData ?? []) as ProjectMedia[]);
 
           base = {
+            ...initialForm,
             title: loaded.title,
             slug: loaded.slug,
             category: loaded.category,
@@ -124,6 +138,11 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
             tools: loaded.tools.join(", "),
             featured: loaded.featured,
             published: loaded.published,
+            platform: loaded.platform ?? "", features: (loaded.features ?? []).join("\n"),
+            repository_url: loaded.repository_url ?? "", demo_url: loaded.demo_url ?? "",
+            download_url: loaded.download_url ?? "", action_label: loaded.action_label ?? "",
+            portrait: loaded.portrait === true, mineral: loaded.mineral ?? "",
+            cover_alt: loaded.cover_alt ?? "", display_order: loaded.display_order,
           };
         }
 
@@ -201,6 +220,8 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
     }
     if (!slugify(form.slug)) { setStatus("Use letters or numbers in the slug."); return; }
     if (!Number.isInteger(Number(form.year)) || Number(form.year) < 1 || Number(form.year) > 9999) { setStatus("Enter a valid four-digit year."); return; }
+    if (!Number.isSafeInteger(form.display_order) || form.display_order < -2147483648 || form.display_order > 2147483647) { setStatus("Enter a valid whole number for station order."); return; }
+    if ([form.repository_url, form.demo_url, form.download_url].some(url => url.trim() && !externalUrl(url.trim()))) { setStatus("Links must be complete HTTPS URLs without embedded credentials."); return; }
 
     setSaving(true);
     setStatus(form.published ? "Publishing…" : "Saving draft…");
@@ -223,15 +244,21 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           .filter(Boolean),
         featured: form.featured,
         published: form.published,
+        platform: form.platform.trim(),
+        features: form.features.split("\n").map(value => value.trim()).filter(Boolean),
+        repository_url: externalUrl(form.repository_url.trim()), demo_url: externalUrl(form.demo_url.trim()),
+        download_url: externalUrl(form.download_url.trim()), action_label: form.action_label.trim(),
+        portrait: form.portrait, mineral: form.mineral.trim(), cover_alt: form.cover_alt.trim(),
+        display_order: form.display_order,
       };
 
-      let id = projectId;
+      let id = projectId ?? project?.id;
       let savedProject: Project;
 
       if (id) {
         const { data, error } = await supabase
           .from("projects")
-          .update(payload)
+          .update({ ...payload, published: Boolean(project?.published && form.published) })
           .eq("id", id)
           .select("*")
           .single();
@@ -241,13 +268,15 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
       } else {
         const { data, error } = await supabase
           .from("projects")
-          .insert(payload)
+          .insert({ ...payload, published: false })
           .select("*")
           .single();
 
         if (error) throw error;
         savedProject = data as Project;
         id = savedProject.id;
+        // Retain the new draft ID if an upload fails, so retry cannot duplicate it.
+        setProject(savedProject);
       }
 
       if (coverFile && id) {
@@ -263,29 +292,44 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
         savedProject = data as Project;
       }
 
+      if (coverFile) {
+        setProject(savedProject);
+        setCoverFile(null);
+        await saveDraftFiles(draftKey, "cover", []);
+      }
+
       async function uploadMedia(files: File[], section: "gallery" | "process") {
         if (!id) return;
 
-        const existing = media.filter((item) => item.section === section).length;
+        const existing = Math.max(-1, ...media.filter(item => item.section === section).map(item => item.display_order)) + 1;
 
         for (let index = 0; index < files.length; index += 1) {
           const file = files[index];
           const path = await uploadOne(user!.id, id, file, section);
-          const { error } = await supabase.from("project_media").insert({
+          const { data, error } = await supabase.from("project_media").insert({
             project_id: id,
             path,
             caption: "",
             alt_text: form.title,
             section,
             display_order: existing + index,
-          });
+          }).select("*").single();
 
           if (error) throw error;
+          setMedia(current => [...current, data as ProjectMedia]);
+          const remaining = files.slice(index + 1);
+          if (section === "gallery") setGalleryFiles(remaining); else setProcessFiles(remaining);
+          await saveDraftFiles(draftKey, section, remaining);
         }
       }
 
       await uploadMedia(galleryFiles, "gallery");
       await uploadMedia(processFiles, "process");
+
+      const { data: completed, error: completionError } = await supabase.from("projects")
+        .update({ published: form.published }).eq("id", id).select("*").single();
+      if (completionError) throw completionError;
+      savedProject = completed as Project;
 
       window.localStorage.removeItem(draftKey);
       await clearDraftFiles(draftKey);
@@ -308,7 +352,7 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
   async function removeMedia(item: ProjectMedia) {
     if (!window.confirm("Remove this image from the project?")) return;
 
-    await supabase.storage.from("portfolio-media").remove([item.path]);
+    // Imported local assets are shared deployed files, never storage objects.
     const { error } = await supabase
       .from("project_media")
       .delete()
@@ -316,6 +360,8 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
 
     if (!error) {
       setMedia((current) => current.filter((mediaItem) => mediaItem.id !== item.id));
+    } else {
+      setStatus(error.message);
     }
   }
 
@@ -329,15 +375,8 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
 
     setSaving(true);
 
-    const paths = [
-      ...(project?.cover_path ? [project.cover_path] : []),
-      ...media.map((item) => item.path),
-    ];
-
-    if (paths.length) {
-      await supabase.storage.from("portfolio-media").remove(paths);
-    }
-
+    // Remove catalog references only. Keep source objects recoverable and avoid
+    // deleting shared assets; storage cleanup is a separate maintenance action.
     const { error } = await supabase
       .from("projects")
       .delete()
@@ -466,13 +505,40 @@ export function ProjectEditor({ projectId }: { projectId?: string }) {
           </label>
 
           <label>
-            Tools <span className="label-note">comma separated</span>
+            Technologies and tools <span className="label-note">comma separated</span>
             <input
               value={form.tools}
               onChange={(event) => update("tools", event.target.value)}
               placeholder="Figma, Clip Studio Paint, Blender"
             />
           </label>
+
+          <label>Station order <span className="label-note">lower numbers appear first</span>
+            <input type="number" step="1" value={form.display_order} onChange={event => update("display_order", Number(event.target.value))} />
+          </label>
+          <label>Presentation
+            <select value={form.portrait ? "portrait" : "landscape"} onChange={event => update("portrait", event.target.value === "portrait")}>
+              <option value="landscape">Landscape</option><option value="portrait">Portrait</option>
+            </select>
+          </label>
+          <label>Cover image description
+            <input value={form.cover_alt} onChange={event => update("cover_alt", event.target.value)} placeholder="Describe the image for screen readers" />
+          </label>
+          <label>Station label <span className="label-note">optional mineral or gallery name</span>
+            <input value={form.mineral} onChange={event => update("mineral", event.target.value)} />
+          </label>
+
+          {!isArtwork(form.category) && <fieldset>
+            <legend>Project details and links</legend>
+            <label>Platform <input value={form.platform} onChange={event => update("platform", event.target.value)} placeholder="Browser, Windows, Android…" /></label>
+            <label>Features <span className="label-note">one per line</span>
+              <textarea rows={4} value={form.features} onChange={event => update("features", event.target.value)} />
+            </label>
+            <label>GitHub repository <input type="url" value={form.repository_url} onChange={event => update("repository_url", event.target.value)} placeholder="https://github.com/…" /></label>
+            <label>Live demo or playable link <input type="url" value={form.demo_url} onChange={event => update("demo_url", event.target.value)} placeholder="https://…" /></label>
+            <label>Download or releases <input type="url" value={form.download_url} onChange={event => update("download_url", event.target.value)} placeholder="https://…" /></label>
+            <label>Primary link label <input value={form.action_label} onChange={event => update("action_label", event.target.value)} placeholder="Play project, Visit demo…" /></label>
+          </fieldset>}
 
           <div className="visibility-panel">
             <label>

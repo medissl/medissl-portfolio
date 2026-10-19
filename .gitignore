@@ -1,6 +1,7 @@
 node_modules
 .next
 .next-cms-test
+supabase/.temp/
 out
 .env*
 !.env.example
