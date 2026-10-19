@@ -18,6 +18,12 @@ Known intentional differences from the original complete screenshot: the repaire
 
 The brief references four supplied screenshots, but the available Phase 4 attachment contains only text. Existing repository captures were used; no claim is made to having inspected missing attachments.
 
+## Approved Jellink display clearance
+
+The owner explicitly approved lowering only Jellink's display. Its image and physical surround now share a center height of 1.65 instead of 3.15; its nameplate follows the image's lower edge. This applies to Jellink alone, including when the two-wall engine reuses a wall. Image fragments are clipped at the new position and remain attached to the existing stone chunks. No rock, light, camera, foliage or crystal was moved.
+
+At 1280×720, the full portrait image clears the original roof. Evidence: `screenshots/phase-4/jellink-display-lowered.png`; compare `astra-restored-jellink.png`. The low nameplate is partly obscured by the foreground cart/rails; the accessible HUD title and inspection control remain visible. Clicking the image opened Jellink's gallery, and drilling reached MauCuan in the ready state. Typecheck, fracture, journey, catalog and exact environment-baseline checks passed.
+
 ## Remaining scope
 
 After recovery verification: Projects navigation, project details, About/Contact, loading UI, typography/colors and audio controls only. No further cave art-direction changes. Use authentic existing content and licensed audio; preserve all working mechanics and backend functionality. Record asset sources/licenses and report any audio procurement or verification limitations.

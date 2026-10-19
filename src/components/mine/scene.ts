@@ -253,7 +253,9 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const art = project.kind === "artwork";
     const imageWidth = Math.min(4.4, 2.8 * aspect), imageHeight = imageWidth / aspect;
     const width = imageWidth + (art ? 0.5 : 0.16), height = imageHeight + (art ? 0.5 : 0.16);
-    const bottom = 3.15 - height / 2, left = -width / 2;
+    // Owner-approved display-only clearance beneath Astra's original Jellink roof.
+    const centerY = project.id === "jellink" ? 1.65 : 3.15;
+    const bottom = centerY - height / 2, left = -width / 2;
     const canvas = wall.surface.image as HTMLCanvasElement;
     const ctx = canvas.getContext("2d")!;
     const scale = canvas.width / width;
@@ -268,6 +270,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     if (!image) ctx.fillText(project.title, canvas.width / 2, drawHeight * 0.48);
     if (!image) { ctx.font = `${0.12 * scale}px Arial`; ctx.fillStyle = "#c4b797"; ctx.fillText(project.category, canvas.width / 2, drawHeight * 0.64); }
     wall.surface.needsUpdate = true;
+    wall.surround.position.y = centerY;
     wall.surround.scale.set(width + 0.15, height + 0.15, 1);
     wall.plaque.position.y = bottom - 0.46; wall.plaque.visible = Boolean(image);
     const titleCanvas = wall.title.image as HTMLCanvasElement, titleContext = titleCanvas.getContext("2d")!;
