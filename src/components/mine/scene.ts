@@ -10,6 +10,7 @@ const smooth = (v: number) => { const t = THREE.MathUtils.clamp(v, 0, 1); return
 
 export function createMine(host: HTMLElement, events: Events, reduced: boolean, projects: MineProject[], initialStation = 0): MineEngine {
   if (!projects.length) throw new Error("The mine needs at least one project.");
+// BEGIN APPROVED ASTRA ENVIRONMENT — b55744c; preserve visual fidelity.
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#182327");
   scene.fog = new THREE.FogExp2("#253338", 0.026);
@@ -31,8 +32,8 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   const wood = mat("#60452d");
   const iron = mat("#444f50", 0.38, 0.72);
   const brass = mat("#b49158", 0.42, 0.65);
-  const moss = mat("#58764a");
-  const leafMat = new THREE.MeshStandardMaterial({ color: "#a5bf79", side: THREE.DoubleSide, roughness: 0.86 });
+  const moss = mat("#596e36");
+  const leafMat = new THREE.MeshStandardMaterial({ color: "#72894b", side: THREE.DoubleSide, roughness: 0.82 });
   const lampMat = new THREE.MeshBasicMaterial({ color: "#ffe2a0" });
   // Small original mineral texture. No external texture requests or asset licensing dependencies.
   const textureCanvas = document.createElement("canvas"); textureCanvas.width = textureCanvas.height = 256;
@@ -46,7 +47,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   tc.strokeStyle = "#555"; tc.lineWidth = 2;
   for (let i = 0; i < 26; i++) { tc.beginPath(); tc.moveTo(random() * 256, 0); tc.bezierCurveTo(random() * 256, 80, random() * 256, 170, random() * 256, 256); tc.stroke(); }
   const grain = new THREE.CanvasTexture(textureCanvas); grain.wrapS = grain.wrapT = THREE.RepeatWrapping; grain.repeat.set(2, 2); textures.push(grain);
-  stone.bumpMap = grain; stone.bumpScale = 0.12; darkStone.bumpMap = grain; darkStone.bumpScale = 0.16; wood.bumpMap = grain; wood.bumpScale = 0.06; moss.map = grain;
+  stone.bumpMap = grain; stone.bumpScale = 0.12; darkStone.bumpMap = grain; darkStone.bumpScale = 0.16; wood.bumpMap = grain; wood.bumpScale = 0.06;
   function mesh(g: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number, parent: THREE.Object3D = scene) {
     const o = new THREE.Mesh(g, m); o.position.set(x, y, z); parent.add(o); return o;
   }
@@ -55,7 +56,6 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const o = mesh(cube, m, x, y, z, parent); o.scale.set(sx, sy, sz); return o;
   }
   const rockGeometry = mergeVertices(new THREE.IcosahedronGeometry(1, 4));
-  const gravelGeometry = new THREE.IcosahedronGeometry(1, 1);
   const p = rockGeometry.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
@@ -80,10 +80,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
       rock(side * (width - 0.25), 0.25, z + 1.8, 2.1, 1.25, 2.5);
       rock(side * (width - 0.5), 6.7, z - 1, 2.7, 1.5, 3.5);
     }
-    const roof = rock(0.8 * Math.sin(bay), 7.8, z, 5.2, 1.7, 3.6, darkStone);
-    // Keep the broad slabs overhead; a steep random pitch crossed the display sightline.
-    roof.rotation.x = 0.05;
-    roof.rotation.z = Math.sin(bay) * 0.04;
+    rock(0.8 * Math.sin(bay), 7.8, z, 5.2, 1.7, 3.6, darkStone);
   });
   const floor = mesh(new THREE.PlaneGeometry(24, 65, 36, 90), darkStone, 0, -0.14, -14); floor.rotation.x = -Math.PI / 2;
   const fp = floor.geometry.attributes.position;
@@ -93,8 +90,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   for (let i = 0; i < 125; i++) {
     const side = i % 2 ? 1 : -1; const z = 10 - random() * 51;
     const size = 0.12 + random() * 0.55;
-    const gravel = mesh(gravelGeometry, i % 4 ? stone : moss, side * (1.7 + random() * 4), size * 0.2, z);
-    gravel.scale.set(size * 1.5, size, size * 1.2); gravel.rotation.set(random(), random() * 3, random());
+    rock(side * (1.7 + random() * 4), size * 0.2, z, size * 1.5, size, size * 1.2, i % 4 ? stone : moss);
   }
   // Track, individual sleepers, rail heads and fastening plates.
   for (let z = 12; z > -43; z -= 1.15) {
@@ -117,23 +113,16 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.4, 8), lampMat, x, y, z);
     mesh(new THREE.CylinderGeometry(0.22, 0.18, 0.12, 8), iron, x, y - 0.26, z);
     for (const dx of [-0.16, 0.16]) box(x + dx, y, z + 0.05, 0.025, 0.5, 0.025, iron);
-    light("#ffd29a", 16, 8, x, y, z);
+    light("#ffd29a", 22, 9, x, y, z);
   }
   lantern(-3.9, 3.8, -3); lantern(3.8, 3.3, -13); lantern(-3.7, 3.7, -27);
   // Purposefully composed mineral seams: amber at SAKIKO, lilac/sea-glass at Jellink.
   const crystalShaft = new THREE.CylinderGeometry(0.23, 0.28, 1.1, 6, 1);
   const crystalTip = new THREE.ConeGeometry(0.23, 0.4, 6); crystalTip.translate(0, 0.75, 0);
   const crystalGeo = mergeGeometries([crystalShaft, crystalTip])!;
-  const crystalColors: number[] = [];
-  const crystalPositions = crystalGeo.attributes.position;
-  for (let i = 0; i < crystalPositions.count; i++) {
-    const shade = 0.72 + (crystalPositions.getY(i) + 0.55) * 0.14;
-    crystalColors.push(shade, shade, shade);
-  }
-  crystalGeo.setAttribute("color", new THREE.Float32BufferAttribute(crystalColors, 3));
   crystalShaft.dispose(); crystalTip.dispose();
   function cluster(x: number, y: number, z: number, color: string, scale: number) {
-    const cm = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.12, metalness: 0.18, roughness: 0.3, flatShading: true, vertexColors: true });
+    const cm = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.3, metalness: 0.25, roughness: 0.22, flatShading: true });
     rock(x, y - 0.1, z, scale, scale * 0.45, scale * 0.8, darkStone);
     const placements = [[0, 0, 0, 1.5], [-0.45, -0.25, 0.12, 1], [0.38, -0.15, 0.1, 1.2], [0.15, -0.35, 0.5, 0.65], [-0.18, -0.2, -0.35, 0.9]];
     placements.forEach(([dx, dy, dz, s]) => {
@@ -147,16 +136,15 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
   cluster(4.2, 0.5, -25, "#b9a1cf", 1.7); cluster(-3.2, 0.3, -32, "#e7b67a", 0.9);
   cluster(-2.7, 0.15, -2.4, "#deb26e", 0.6); cluster(2.7, 0.15, -26, "#a8b8d2", 0.65);
   // Fern fronds with paired tapered leaflets, plus hanging vines following the stone.
-  const leafShape = new THREE.Shape(); leafShape.moveTo(0, 0); leafShape.quadraticCurveTo(0.13, 0.25, 0.02, 0.8); leafShape.quadraticCurveTo(-0.12, 0.35, 0, 0);
+  const leafShape = new THREE.Shape(); leafShape.moveTo(0, 0); leafShape.quadraticCurveTo(0.22, 0.15, 0, 0.8); leafShape.quadraticCurveTo(-0.15, 0.25, 0, 0);
   const leafGeo = new THREE.ShapeGeometry(leafShape);
   const foliage = new THREE.InstancedMesh(leafGeo, leafMat, 1600); let leaves = 0; const dummy = new THREE.Object3D();
   function leaf(x: number, y: number, z: number, rx: number, ry: number, rz: number, size: number) {
-    dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.setScalar(size); dummy.updateMatrix(); foliage.setMatrixAt(leaves, dummy.matrix);
-    foliage.setColorAt(leaves++, new THREE.Color().setHSL(0.23 + Math.sin(x + z) * 0.035, 0.3, 0.43 + Math.sin(y * 2) * 0.1));
+    dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.setScalar(size); dummy.updateMatrix(); foliage.setMatrixAt(leaves++, dummy.matrix);
   }
   for (const [x, z, s] of [[-3.7, 3, 1.4], [3.3, 0, 1.1], [-4, -5, 1], [4.4, -10, 1.3], [-3.3, -19, 1.6], [3.4, -21, 1.5], [-4, -27, 1.1], [4.5, -32, 1.3]]) {
-    for (let frond = 0; frond < 6; frond++) {
-      const angle = frond * 2.399;
+    for (let frond = 0; frond < 7; frond++) {
+      const angle = frond * 0.9;
       for (let n = 1; n < 9; n++) {
         const t = n / 9; const r = t * s;
         for (const side of [-1, 1]) leaf(x + Math.cos(angle) * r, 0.2 + Math.sin(t * 2.2) * s, z + Math.sin(angle) * r, -0.5, angle, side * (0.7 + t * 0.4), (1 - t * 0.65) * s * 0.65);
@@ -184,6 +172,7 @@ export function createMine(host: HTMLElement, events: Events, reduced: boolean, 
     const list = batches.get(object.material) ?? []; list.push(geometry); batches.set(object.material, list); scene.remove(object);
   }
   batches.forEach((geometries, material) => { const combined = mergeGeometries(geometries); if (combined) scene.add(new THREE.Mesh(combined, material)); geometries.forEach(g => g.dispose()); });
+// END APPROVED ASTRA ENVIRONMENT
   const practicalLights = scene.children.filter((object): object is THREE.PointLight => object instanceof THREE.PointLight);
   const lampSources = practicalLights.map(light => ({ position: light.position.clone(), color: light.color.clone(), intensity: light.intensity, distance: light.distance }));
   const environment = new THREE.Group();
