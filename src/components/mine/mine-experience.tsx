@@ -38,6 +38,8 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
   const [audioFailed, setAudioFailed] = useState(false);
   const current = projects[station];
   const project = projects[detail];
+  const mary = projects.find(item => item.slug === "virgin-mary-fanart");
+  const sakiko = projects.find(item => item.id === "sakiko");
   const moving = ["drilling", "breaking", "travelling"].includes(phase);
   const lastStation = station === projects.length - 1;
 
@@ -163,9 +165,9 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
           event.preventDefault(); select(0); navigate(null, 0);
         }}>MEDISSL</Link>
         <nav aria-label="Portfolio">
-          <button onClick={() => open("index")}>Projects</button>
-          <button onClick={() => open("about")}>About</button>
-          <button onClick={() => open("settings")}>Settings</button>
+          <button aria-haspopup="dialog" onClick={() => open("index")}>Projects</button>
+          <button aria-haspopup="dialog" onClick={() => open("about")}>About</button>
+          <button aria-haspopup="dialog" onClick={() => open("settings")}>Settings</button>
           <button aria-pressed={unlocked && sound.enabled} onClick={() => changeSound({ ...(unlocked ? sound : savedSound()), enabled: !unlocked || !sound.enabled })}>
             {unlocked && sound.enabled ? "Sound on" : "Sound off"}
           </button>
@@ -236,15 +238,23 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
             <div className="mine-about-intro"><p className="mine-kicker">The person behind the mine</p>
             <h2 id="mine-panel-title">Medianto<br />Susilo.</h2>
             <p className="mine-description">I make games, software, interactive experiences, and artwork.</p>
-            <p>I study Computer Science at BINUS University in Jakarta, specializing in Interactive Multimedia. I’m interested in how code, visual design, sound, and storytelling come together.</p>
+            <p>I study Computer Science at BINUS University in Jakarta, specializing in Interactive Multimedia.</p>
+            <p>I like connecting code, visual design and sound, from illustration to a game’s main menu.</p>
             <p>Outside the screen: guitar, music production, and songwriting.</p>
             <div className="mine-contact" id="contact"><span>Get in touch</span>
               <a href="mailto:mediantozeng@gmail.com">mediantozeng@gmail.com</a>
               <a href="https://github.com/medissl" target="_blank" rel="noreferrer">GitHub / medissl ↗</a>
             </div></div>
             <div className="mine-about-work" aria-label="Selected games and artwork">
-              <figure><ProjectImage src="/mine/marina-takopi-fanart.webp" alt="Marina Takopi Fanart, a drawing by Medianto" /><figcaption>Marina Takopi Fanart</figcaption></figure>
-              <figure><ProjectImage src="/mine/wildfeast-outdoor.webp" alt="Wildfeast: Isles of Wonder, a game by Medianto" /><figcaption>Wildfeast: Isles of Wonder</figcaption></figure>
+              {[mary, sakiko].filter((item): item is MineProject => Boolean(item)).map(item => <a key={item.id} href={mineHref(item.id)} aria-label={`View ${item.title}`} onClick={event => {
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                  event.preventDefault(); open("project", projects.findIndex(p => p.id === item.id));
+                }}><figure>
+                  {item.image && <ProjectImage src={item.image} alt={item.id === "sakiko" ? "SAKIKO's actual main-menu design" : "Virgin Mary fanart by Medianto"} />}
+                  <figcaption><strong>{item.id === "sakiko" ? "SAKIKO main menu" : item.title}</strong>
+                    <span>{item.id === "sakiko" ? "Game UI · Visual direction · Interactive multimedia" : "Illustration · Digital art"}</span>
+                  </figcaption>
+                </figure></a>)}
             </div>
           </section>}
           {panel === "settings" && <section className="mine-settings">
