@@ -1,0 +1,19 @@
+MEDISSL Crystal Mine audio
+
+Music: Mysterious Cave Theme Loop — beardalaxy
+https://opengameart.org/content/mysterious-cave-theme-loop
+Source: cave_in_game.ogg; distributed here as cave.ogg, unchanged.
+
+Motor: Generator (loop) — YCbCr
+https://opengameart.org/content/generator-loop
+Source: loop_generator_1.mp3; distributed here as motor.mp3, unchanged.
+Used as short, phase-bounded playback, not as a seamless loop.
+
+Mining, metal and bell effects: Impact Sounds 1.0 — Kenney
+https://kenney.nl/assets/impact-sounds
+Selected original OGG files, unchanged. Playback gain/rate varies in the app.
+
+All these assets are offered by their authors under CC0 1.0:
+https://creativecommons.org/publicdomain/zero/1.0/
+Attribution is optional; included with thanks to the creators.
+Source pages and Kenney's bundled license reviewed 19 October 2026.

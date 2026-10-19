@@ -1,0 +1,18 @@
+{
+  "profile": "{\"samples\":180,\"frameMedian\":16.69999999999891,\"frameP95\":16.80000000000109,\"callbackP95\":2.6999999997206032}",
+  "scene": {
+    "coverCache": "2",
+    "displayFragments": "23",
+    "drawCalls": "189",
+    "geometries": "158",
+    "journeyTime": "0.00",
+    "phase": "ready",
+    "quality": "full",
+    "station": "sakiko",
+    "textures": "7",
+    "tileCount": "2",
+    "triangles": "138860",
+    "wallCount": "2"
+  },
+  "conditions": "Local in-app browser, other cave paused; frame timing only, no GPU duration or physical-device measurement."
+}

@@ -1,6 +1,6 @@
 # Phase 4 — approved environment recovery, then UI/audio only
 
-19 October 2026. In progress on the existing development branch. No deployment authorized.
+19 October 2026. Local Phase 4 implementation complete on the existing development branch. No deployment authorized.
 
 ## Protected visual baseline
 
@@ -24,6 +24,24 @@ The owner explicitly approved lowering only Jellink's display. Its image and phy
 
 At 1280×720, the full portrait image clears the original roof. Evidence: `screenshots/phase-4/jellink-display-lowered.png`; compare `astra-restored-jellink.png`. The low nameplate is partly obscured by the foreground cart/rails; the accessible HUD title and inspection control remain visible. Clicking the image opened Jellink's gallery, and drilling reached MauCuan in the ready state. Typecheck, fracture, journey, catalog and exact environment-baseline checks passed.
 
-## Remaining scope
+## UI and audio delivered
 
-After recovery verification: Projects navigation, project details, About/Contact, loading UI, typography/colors and audio controls only. No further cave art-direction changes. Use authentic existing content and licensed audio; preserve all working mechanics and backend functionality. Record asset sources/licenses and report any audio procurement or verification limitations.
+Projects now uses image-led compositions, portrait mats and readable no-cover entries. Detail pages pair project imagery with the description/actions and actual tools/features; artwork retains its complete gallery and process sections. About/Contact uses existing biography, artwork, game imagery and contact links. Cream serif headings, moss surfaces and brass outlines connect the overlays to the mine. Mobile stacks the detail content and provides a separate navigation row. Native dialog focus and Escape behavior remain intact. A second visual pass corrected the crowded mobile header and matched native control/scrollbar colors to the dark UI.
+
+The mine route and engine startup share `MineLoading`: a lightweight crop of the restored cave, concise real loading states, an indeterminate progress indicator and a direct archive link. No fake percentage or artificial application delay. Other routes retain their existing loading UI.
+
+Sound is opt-in, with a header mute toggle, separate music/effects sliders and validated local preferences. Levels persist across reloads; each visit requires a gesture to enable playback. Licensed magical cave music, a motor bed, mining impacts, restrained rail clatter and selection bells follow existing engine phases. No audio logic was added to the renderer. Effects stop on phase changes, pause, mute, hidden tab and disposal; music continues gently through overlays and pauses when hidden. At most eight effect voices plus one music element can play, with one phase timer. Unsupported playback reports a non-blocking message in Settings. Original compressed assets total about 1 MB; sources and CC0 licenses are recorded in `public/mine/audio/CREDITS.txt`.
+
+## Verification and limits
+
+- Production build, TypeScript, lint, fracture, journey, station/catalog, audio lifecycle and exact historical environment checks passed. The initial sandbox build hit a Turbopack CSS-worker cache failure; regenerating only ignored `.next` output resolved it, with no source/configuration workaround.
+- Browser: thirteen full journeys starting at Jellink returned through the last artwork to SAKIKO and back to Jellink. Every journey reached breaking, travelling and ready. Sequence: `screenshots/phase-4-journey.json`.
+- Browser: W/Arrow Up, Escape skip, mobile advance, direct selection, image inspection, Jellink's portrait gallery, Marina's artwork/process gallery, manual instant travel and simulated OS reduced motion passed. Simulated unavailable WebGL produced the usable thirteen-entry archive. Dialog Escape restored focus to its opener.
+- Actual renders inspected at desktop 1280×720 and a real 390×844 iframe viewport. Projects, details, About/Contact, Settings and the preserved cave were reviewed. The browser viewport override was unreliable, so the test-only proxy provided the explicit narrow iframe. Screenshots are in `screenshots/phase-4/`.
+- Browser decoded all six assets with nonzero signal. Music reached readyState 4, its playback clock advanced and looped, motor/impact/clatter playback occurred, and effects stopped at ready. Mute paused all voices. A test-only visibility event paused/resumed music. Effects level 49% persisted across reload. Thirty simulated audio journeys also left no phase timers/effect voices running, and disposal removed the listener.
+- Local frame sample: median 16.7 ms, p95 16.8 ms, callback p95 2.7 ms; full quality, two walls/two scenery tiles, two cached covers and seven textures. `screenshots/phase-4-performance.json` records the sample. This measures browser frame/callback timing, not GPU duration, a physical-device benchmark or a long-run heap profile. No environment optimization was introduced.
+- Backend, authentication, admin, database and project-loader source were untouched. Routes build successfully; authenticated admin mutations were deliberately not exercised and no production data changed.
+
+Remaining review: audition the balance and loop seams on the owner's headphones/speakers, and test on physical mobile/Safari devices. The motor/rail texture uses licensed samples, not bespoke minecart recordings. No subjective audio audition is claimed. Jellink's lowered nameplate is partly behind the foreground cart/rails; its complete image and accessible HUD inspection are usable. The original user comparison images were unavailable as attachments, so recovery relies on exact Git source and saved repository captures as described above.
+
+Stop at Phase 4. The safest next milestone is owner review of the local visuals and sound mix; any environmental adjustment requires fresh, specific approval. Nothing was pushed, merged or deployed.
