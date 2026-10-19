@@ -4,6 +4,10 @@ export const PROJECT_CATEGORIES = [
   "UI/UX",
   "Interactive",
   "Experimental",
+  "Software",
+  "Game development",
+  "Interactive media",
+  "Experiment",
 ] as const;
 
 export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
@@ -35,6 +39,16 @@ export type Project = {
   carousel_order: number;
   created_at: string;
   updated_at: string;
+  legacy_key?: string | null;
+  platform?: string;
+  features?: string[];
+  repository_url?: string | null;
+  demo_url?: string | null;
+  download_url?: string | null;
+  action_label?: string;
+  portrait?: boolean;
+  mineral?: string;
+  cover_alt?: string;
 };
 
 export type ProjectWithMedia = Project & {

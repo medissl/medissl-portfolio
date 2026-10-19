@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { isLocalMedia } from "./content";
 
 const fallbackUrl = "https://cegtlpoofkogscvopcug.supabase.co";
 const fallbackPublishableKey = "sb_publishable_zkTB1zEwB6y5omIVVk6IIQ_HL9CwR9w";
@@ -33,5 +34,6 @@ export function getServerSupabase() {
 
 export function publicMediaUrl(path?: string | null) {
   if (!path) return null;
+  if (path.startsWith("/")) return isLocalMedia(path) ? path : null;
   return `${supabaseUrl}/storage/v1/object/public/portfolio-media/${path}`;
 }
