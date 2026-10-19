@@ -8,3 +8,6 @@ out
 !.env.example
 .DS_Store
 *.log
+/AGENTS.md
+/CLAUDE.md
+/DESIGN.md
