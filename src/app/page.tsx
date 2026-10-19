@@ -1,57 +1,19 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { AnimatedStatement } from "@/components/animated-statement";
-import { DisciplineShowcase } from "@/components/discipline-showcase";
-import { FeaturedCarousel } from "@/components/featured-carousel";
-import { Hero } from "@/components/hero";
-import { Reveal } from "@/components/reveal";
-import {
-  getCarouselFallbackProjects,
-  getFeaturedProjects,
-} from "@/lib/projects";
+import { notFound } from "next/navigation";
+import { MineExperience } from "@/components/mine/mine-experience";
+import { readMineNavigation } from "@/components/mine/navigation";
+import { getMineProjects } from "@/lib/mine-projects";
+import "./mine/mine.css";
 
+export const metadata = { title: "The Crystal Mine", alternates: { canonical: "/" } };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
-export default async function Home() {
-  const [featured, fallback] = await Promise.all([
-    getFeaturedProjects(),
-    getCarouselFallbackProjects(),
-  ]);
-
-  const carouselProjects = featured.length ? featured : fallback;
-
-  return (
-    <>
-      <Hero projects={carouselProjects} />
-
-      <section className="section shell" id="selected-work">
-        <Reveal>
-          <div className="section-heading section-heading--compact">
-            <div><p className="eyebrow">A SELECTION FROM THE ARCHIVE</p><h2>Recent <em>work.</em></h2></div>
-            <Link href="/work" className="text-link">
-              View all work <ArrowUpRight size={17} />
-            </Link>
-          </div>
-        </Reveal>
-
-        <FeaturedCarousel projects={carouselProjects} />
-      </section>
-
-      <section className="section shell">
-        <Reveal>
-          <div className="section-heading section-heading--stacked">
-            <p className="eyebrow">WHAT I LIKE MAKING</p>
-            <h2>Different mediums. Same urge to build.</h2>
-          </div>
-        </Reveal>
-
-        <DisciplineShowcase />
-      </section>
-
-      <section className="section shell">
-        <AnimatedStatement />
-      </section>
-    </>
-  );
+export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const [query, catalog] = await Promise.all([searchParams, getMineProjects()]);
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) if (typeof value === "string") params.set(key, value);
+  const state = readMineNavigation(params);
+  const project = catalog.projects.find(item => item.id === state.project || item.slug === state.project);
+  if (state.project && !project) notFound();
+  return <MineExperience key={state.lightweight ? "archive" : "mine"} projects={catalog.projects} savedArtwork={catalog.savedArtwork}
+    initialProject={project?.id} initialPanel={state.panel} lightweight={state.lightweight} />;
 }

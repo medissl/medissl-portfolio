@@ -1,16 +1,8 @@
-import type { Metadata } from "next";
-import { MineExperience } from "@/components/mine/mine-experience";
-import { getMineProjects } from "@/lib/mine-projects";
-import "./mine.css";
-
-export const metadata: Metadata = {
-  title: "The Crystal Mine — prototype",
-  robots: { index: false, follow: false },
-};
-
-export default async function MinePage({ searchParams }: { searchParams: Promise<{ view?: string; project?: string }> }) {
-  const [{ view, project }, catalog] = await Promise.all([searchParams, getMineProjects()]);
-  return <MineExperience key={`${view ?? "mine"}:${project ?? ""}`} projects={catalog.projects}
-    savedArtwork={catalog.savedArtwork} initialProject={project} lightweight={view === "projects"} />;
+import { redirect } from "next/navigation";
+export default async function MineAlias({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    for (const item of typeof value === "string" ? [value] : value ?? []) params.append(key, item);
+  }
+  redirect(params.size ? `/?${params}` : "/");
 }
-

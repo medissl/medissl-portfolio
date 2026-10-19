@@ -7,8 +7,7 @@ import type { MineProject } from "./projects";
 import type { MineEngine } from "./scene";
 import { MineLoading } from "./mine-loading";
 import { createMineAudio, defaultSound, readSound, soundKey, type SoundPreference } from "./audio";
-
-type Panel = "project" | "index" | "about" | "settings" | null;
+import { mineHref, readMineNavigation, type MinePanel as Panel } from "./navigation";
 
 function ProjectImage({ src, alt, eager = false }: { src: string; alt: string; eager?: boolean }) {
   const [failed, setFailed] = useState(false);
@@ -17,8 +16,8 @@ function ProjectImage({ src, alt, eager = false }: { src: string; alt: string; e
     loading={eager ? "eager" : "lazy"} onError={() => setFailed(true)} />;
 }
 
-export function MineExperience({ projects, lightweight = false, initialProject, savedArtwork = false }: {
-  projects: MineProject[]; lightweight?: boolean; initialProject?: string; savedArtwork?: boolean;
+export function MineExperience({ projects, lightweight = false, initialProject, initialPanel = null, savedArtwork = false }: {
+  projects: MineProject[]; lightweight?: boolean; initialProject?: string; initialPanel?: Panel; savedArtwork?: boolean;
 }) {
   const initialIndex = Math.max(0, projects.findIndex(project => project.id === initialProject));
   const host = useRef<HTMLDivElement>(null);
@@ -30,7 +29,7 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
   const [station, setStation] = useState(initialIndex);
   const [phase, setPhase] = useState("loading");
   const [failed, setFailed] = useState(lightweight);
-  const [panel, setPanel] = useState<Panel>(null);
+  const [panel, setPanel] = useState<Panel>(initialPanel);
   const [detail, setDetail] = useState(initialIndex);
   const [reduced, setReduced] = useState(false);
   const audio = useRef<ReturnType<typeof createMineAudio> | null>(null);
@@ -62,14 +61,42 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
     if (selected.current !== index || moving) engine.current?.jump(index);
     selected.current = index; setStation(index);
   }
+  function navigate(next: Panel, index: number) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("project", projects[index].id);
+    if (next) url.searchParams.set("panel", next === "index" ? "projects" : next);
+    else url.searchParams.delete("panel");
+    url.hash = "";
+    if (url.href !== window.location.href) window.history.pushState(null, "", url);
+  }
   function open(next: Panel, index = station) {
     if (next === "settings" && !unlocked) setSound({ ...savedSound(), enabled: false });
     if (!dialog.current?.open) opener.current = document.activeElement as HTMLElement;
     if (next === "project") { select(index); setDetail(index); }
     setPanel(next); engine.current?.pause(true);
+    navigate(next, index);
     if (!dialog.current?.open) dialog.current?.showModal();
     else dialog.current.querySelector<HTMLButtonElement>(".mine-close")?.focus();
+    if (dialog.current) dialog.current.scrollTop = 0;
   }
+  useEffect(() => {
+    const restore = () => {
+      const state = readMineNavigation(new URLSearchParams(window.location.search));
+      const index = Math.max(0, projects.findIndex(item => item.id === state.project || item.slug === state.project));
+      selected.current = index; setStation(index); setDetail(index); setPanel(state.panel);
+      engine.current?.jump(index); engine.current?.pause(Boolean(state.panel));
+      if (state.panel) {
+        if (!dialog.current?.open) { opener.current = document.activeElement as HTMLElement; dialog.current?.showModal(); }
+        if (dialog.current) dialog.current.scrollTop = 0;
+      } else dialog.current?.close();
+    };
+    if (initialPanel) dialog.current?.showModal();
+    const focusContact = requestAnimationFrame(() => {
+      if (window.location.hash === "#contact") document.getElementById("contact")?.scrollIntoView();
+    });
+    window.addEventListener("popstate", restore);
+    return () => { window.removeEventListener("popstate", restore); cancelAnimationFrame(focusContact); };
+  }, [initialPanel, projects]);
   useEffect(() => { inspectRef.current = () => open("project"); });
   useEffect(() => {
     if (lightweight) return;
@@ -106,17 +133,23 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
     window.history.replaceState(null, "", url);
   }, [station, projects]);
   function close() { dialog.current?.close(); }
-  function onClose() { setPanel(null); engine.current?.pause(false); opener.current?.focus(); }
+  function onClose() {
+    setPanel(null); engine.current?.pause(false); opener.current?.focus();
+    if (new URLSearchParams(window.location.search).has("panel")) navigate(null, selected.current);
+  }
 
   function projectList() {
     return <div className="mine-index">{projects.map((item, index) => (
-      <button key={item.id} data-project={item.id} data-kind={item.kind} data-portrait={item.portrait}
-        className={item.image ? "" : "without-media"} onClick={() => open("project", index)} aria-label={`View ${item.title}`}>
+      <a key={item.id} href={mineHref(item.id)} data-project={item.id} data-kind={item.kind} data-portrait={item.portrait}
+        className={item.image ? "" : "without-media"} onClick={event => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault(); open("project", index);
+        }} aria-label={`View ${item.title}`}>
         <span className="mine-index-media">{item.image ? <ProjectImage src={item.image} alt="" />
           : <span className="mine-index-specimen" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>}</span>
         <span className="mine-index-caption"><span className="mine-index-category">{String(index + 1).padStart(2, "0")} · {item.category}</span>
           <strong>{item.title}</strong>{!item.image && <span className="mine-index-summary">{item.description}</span>}</span>
-      </button>
+      </a>
     ))}</div>;
   }
 
@@ -125,7 +158,10 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
       <div className="mine-world" ref={host} aria-hidden={failed} />
       <div className="mine-vignette" aria-hidden="true" />
       <header className="mine-header">
-        <Link className="mine-brand" href="/" aria-label="Medissl — portfolio home">MEDISSL</Link>
+        <Link className="mine-brand" href="/" aria-label="Medissl — portfolio home" onClick={event => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault(); select(0); navigate(null, 0);
+        }}>MEDISSL</Link>
         <nav aria-label="Portfolio">
           <button onClick={() => open("index")}>Projects</button>
           <button onClick={() => open("about")}>About</button>
@@ -193,7 +229,7 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
             <h2 id="mine-panel-title">Projects</h2>
             <p className="mine-description">Choose where to explore next.</p>
             {projectList()}
-            <Link href={`/mine?view=projects&project=${encodeURIComponent(current.id)}`} className="mine-text-link">Browse without 3D →</Link>
+            <Link href={`/?view=projects&project=${encodeURIComponent(current.id)}`} className="mine-text-link">Browse without 3D →</Link>
             {savedArtwork && <p className="mine-feed-status">Showing saved artwork while the live archive is unavailable.</p>}
           </section>}
           {panel === "about" && <section className="mine-about">
@@ -202,7 +238,7 @@ export function MineExperience({ projects, lightweight = false, initialProject, 
             <p className="mine-description">I make games, software, interactive experiences, and artwork.</p>
             <p>I study Computer Science at BINUS University in Jakarta, specializing in Interactive Multimedia. I’m interested in how code, visual design, sound, and storytelling come together.</p>
             <p>Outside the screen: guitar, music production, and songwriting.</p>
-            <div className="mine-contact"><span>Get in touch</span>
+            <div className="mine-contact" id="contact"><span>Get in touch</span>
               <a href="mailto:mediantozeng@gmail.com">mediantozeng@gmail.com</a>
               <a href="https://github.com/medissl" target="_blank" rel="noreferrer">GitHub / medissl ↗</a>
             </div></div>

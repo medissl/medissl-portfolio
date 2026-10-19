@@ -2,6 +2,11 @@
 .mine button,.mine a { -webkit-tap-highlight-color:transparent; }
 .mine button { cursor:pointer; }
 .mine button:disabled { cursor:wait; opacity:.5; }
+.mine-error { display:grid; place-items:center; padding:32px; }
+.mine-error>div { max-width:560px; }
+.mine-error h1 { font:400 clamp(32px,5vw,48px)/1.1 Georgia,serif; }
+.mine-error p { line-height:1.7; color:var(--mine-muted); }
+.mine-error .mine-primary { display:inline-block; margin:20px 20px 0 0; }
 .mine :focus-visible { outline:2px solid #efd4a0; outline-offset:5px; }
 .mine-world,.mine-vignette { position:absolute; inset:0; }
 .mine-world canvas { display:block; width:100%; height:100%; }
@@ -84,20 +89,20 @@
 .mine-links a,.mine-text-link { display:inline-block; padding:10px 0; border-bottom:1px solid #b5a888; font-size:14px; }
 .mine-links a:hover { color:#f2cf8c; }
 .mine-index { margin:32px 0; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:32px 24px; }
-.mine-index button { grid-column:span 3; min-width:0; display:flex; flex-direction:column; text-align:left; border:0; padding:0; background:none; }
-.mine-index button:first-child { grid-column:span 4; }
-.mine-index button[data-portrait="true"],.mine-index button[data-kind="artwork"],.mine-index button.without-media { grid-column:span 2; }
+.mine-index a { grid-column:span 3; min-width:0; display:flex; flex-direction:column; text-align:left; border:0; padding:0; background:none; }
+.mine-index a:first-child { grid-column:span 4; }
+.mine-index a[data-portrait="true"],.mine-index a[data-kind="artwork"],.mine-index a.without-media { grid-column:span 2; }
 .mine-index-media { display:flex; align-items:center; justify-content:center; width:100%; height:240px; padding:9px; background:#101c19; border:1px solid #76664c; box-shadow:inset 0 0 0 4px #2b3328,0 8px 16px #060b0833; transition:border-color .18s,transform .18s; overflow:hidden; }
 .mine-index-media img { width:100%; height:100%; object-fit:contain; }
-.mine-index button[data-portrait="true"] .mine-index-media { background:#c4b99b; }
-.mine-index button[data-kind="artwork"] .mine-index-media { background:#ded3b6; padding:16px; }
-.mine-index button:hover .mine-index-media { border-color:#d0b67d; transform:translateY(-3px); }
+.mine-index a[data-portrait="true"] .mine-index-media { background:#c4b99b; }
+.mine-index a[data-kind="artwork"] .mine-index-media { background:#ded3b6; padding:16px; }
+.mine-index a:hover .mine-index-media { border-color:#d0b67d; transform:translateY(-3px); }
 .mine-index-caption { padding:17px 0 0; }
 .mine-index strong { display:block; font:400 25px/1.15 Georgia,serif; margin-top:7px; }
 .mine-index-category { display:block; font-size:10px; color:#c8b78c; letter-spacing:.04em; }
 .mine-index-summary { display:block; margin-top:10px; font-size:13px; line-height:1.6; color:#bfc6b6; }
 .mine-index-specimen { color:#a89466; font:italic 64px Georgia,serif; }
-.mine-index button.without-media .mine-index-media { height:100px; background:#202d26; }
+.mine-index a.without-media .mine-index-media { height:100px; background:#202d26; }
 .mine-media-error { display:block; color:#c0bcae; font-size:12px; padding:16px; }
 .mine-feed-status { color:#bcbcac; font-size:12px; }
 .mine-fallback { position:relative; margin:105px auto 0; padding:24px; max-width:760px; max-height:calc(100dvh - 125px); overflow:auto; background:#242d2a; }
@@ -118,13 +123,13 @@
  .mine-sheet { padding:14px 22px 28px; }
  .mine-dialog { width:calc(100% - 24px); max-height:calc(100dvh - 24px); }
  .mine-index { grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px 16px; }
- .mine-index button,.mine-index button:first-child,.mine-index button[data-portrait="true"],.mine-index button[data-kind="artwork"],.mine-index button.without-media { grid-column:span 1; }
- .mine-index button:first-child { grid-column:1/-1; }
+ .mine-index a,.mine-index a:first-child,.mine-index a[data-portrait="true"],.mine-index a[data-kind="artwork"],.mine-index a.without-media { grid-column:span 1; }
+ .mine-index a:first-child { grid-column:1/-1; }
  .mine-index-media { height:200px; padding:5px; }
- .mine-index button:first-child .mine-index-media { height:220px; }
+ .mine-index a:first-child .mine-index-media { height:220px; }
  .mine-index strong { font-size:21px; }
  .mine-index-category { font-size:9px; }
- .mine-index button[data-kind="artwork"] .mine-index-media { padding:8px; }
+ .mine-index a[data-kind="artwork"] .mine-index-media { padding:8px; }
  .mine-description { font-size:16px; }
  .mine-case { display:block; padding-top:0; }
  .mine-case .mine-gallery { margin-top:28px; }

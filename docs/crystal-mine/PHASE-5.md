@@ -16,3 +16,9 @@ Graphify now indexes `medissl/medissl-portfolio` at `e68b6458`, older than the l
 ## Routing audit before migration
 
 `/` is the legacy homepage, `/about` the old biography, `/work` the old archive and `/work/[slug]` the old artwork layout. The mine logo points at `/`; artwork records point to `/work/[slug]`; its archive/loading links point at `/mine?view=projects`. `SiteShell` skips the legacy header/footer only for `/mine`. Root layout globally imports old public/admin styles. Admin shares the shell/header and global utility styles, so those cannot be removed blindly. Backend helpers, storage/media records, draft preservation and RLS migrations must be retained.
+
+## Milestone B
+
+Root now renders the mine dynamically, with shareable project/panel URLs. `/mine` preserves its query when redirecting to root; `/work` opens Projects; `/about` opens About; `/contact` opens its contact section. `/work/[slug]` resolves published catalog content to the matching detail, including artwork galleries/process images. Unpublished, unknown and intentionally excluded Mewdi links use the new themed 404 rather than silently opening unrelated content. No database records were removed. Logo returns to SAKIKO. Public routes no longer render the legacy shell; admin remains separate. Project entries are real links supporting modifier-click/new tabs, with native overlay Back/Forward navigation. Typecheck, catalog, navigation and protected-environment checks passed; browser confirmed Projects → Jellink → Back, Virgin Mary deep link, inspection close and logo return.
+
+The additional living-CMS requirement is a release gate: the public feed is already request-driven and the engine uses dynamic project length, but classification, admin ordering and open-tab freshness need completion and isolated publish/unpublish verification. Thirteen is the current inventory, never a permanent maximum.

@@ -8,7 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
-  if (pathname === "/mine") return <>{children}</>;
+  if (!isAdmin) return <>{children}</>;
   return (
     <>
       {isAdmin && <AmbientBackground />}

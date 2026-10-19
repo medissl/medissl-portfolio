@@ -10,6 +10,6 @@ export function MineLoading({ stage = "Preparing the cave and project archive." 
       <p>{stage}</p>
       <progress className={styles.progress} aria-label={stage} />
     </div>
-    <Link className={styles.alternative} href="/mine?view=projects">Browse without 3D →</Link>
+    <Link className={styles.alternative} href="/?view=projects">Browse without 3D →</Link>
   </section>;
 }
