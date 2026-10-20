@@ -1,5 +1,7 @@
 # Unified CMS release plan — approval required
 
+> Executed after owner approval on 20 October 2026. See `UNIFIED-CMS.md` for the verified production state and retained compatibility rollback deployment. The approval wording and sequence below are the historical release plan, not an outstanding approval request. No destructive rollback is authorized.
+
 Target: existing `medissl-portfolio` Supabase `cegtlpoofkogscvopcug`, GitHub `medissl/medissl-portfolio`, Vercel `medissl-portfolio.vercel.app`. No production writes or release are authorized by this plan. A preview/PR is preparation only.
 
 ## Preflight and backup (before any production migration)

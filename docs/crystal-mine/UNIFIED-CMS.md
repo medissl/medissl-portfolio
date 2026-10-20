@@ -1,5 +1,13 @@
 # Unified portfolio CMS — implementation and release gate
 
+## Production release — 20 October 2026
+
+Owner approved publication and continuation. PR #2 merged as `f7104a4`. The additive schema, admin reorder RPC and insert-only catalog migration are applied. Production is now CMS-only (`MEDISSL_UNIFIED_CMS=true`), with 14 database projects and 13 public stations; the excluded Mewdi record remains intact. All four original project rows, six original media rows and existing RLS policies match the preflight backup. Ten curated projects and five gallery references passed the strict equivalence gate, including 11 original local assets returning HTTP 200.
+
+Compatibility rollback deployment: `dpl_DGqjDFhAoJcH1E8EC4JzBySELtMu` (same code, compatibility configuration). Initial verified CMS-only deployment: `dpl_3ZDXnbNsHA2AFZsR68atirDkZsQq`, READY and aliased to `medissl-portfolio.vercel.app`. The provider assigns migration versions at application time; inspect Supabase migration history by the reviewed names rather than replaying local timestamps.
+
+Backup is retained outside Git with SHA-256 `08B3BCA250D210D1D1A7EB4A688CEDAB21173D1C634F06B6DB9610C8289182B4`. `AGENTS.md`, `CLAUDE.md` and `DESIGN.md` are absent from GitHub main and remain ignored local files. The README collection screenshot was corrected to show the actual Projects menu; the adjacent image shows SAKIKO inspection. Historical implementation/gate notes below describe the pre-release work.
+
 Production baseline: `7e500ac`. Working branch: `codex/unified-portfolio-cms`.
 
 ## Model (Milestone A)
