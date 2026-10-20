@@ -12,23 +12,23 @@ The portfolio is both a small playable journey and a practical gallery. Choose a
 
 | The collection | Project inspection |
 | --- | --- |
-| ![Current Projects menu with real project imagery](docs/crystal-mine/screenshots/release/projects.png) | ![SAKIKO detail showing its actual dark main menu](docs/crystal-mine/screenshots/release/project-detail.png) |
+| ![Projects collection menu showing SAKIKO and Jellink](docs/crystal-mine/screenshots/release/projects.png) | ![SAKIKO project detail with screenshots, description, and links](docs/crystal-mine/screenshots/release/project-detail.png) |
 
 - Textured cave formations, crystals, foliage, and atmospheric lighting built with Three.js.
 - A working minecart and drill, progressive cracks, and shared image-and-stone fracture animation.
 - Reusable chambers and walls: the world stays bounded as the collection grows.
 - Direct station selection, shareable project links, galleries, and native browser Back/Forward.
 - Responsive controls, keyboard navigation, reduced-motion travel, and a complete archive when WebGL is unavailable.
-- Opt-in cave music and recorded mechanical, wheel, stone, and debris effects synchronized to animation frames.
+- Gesture-start cave music and recorded mechanical, wheel, stone, and debris effects synchronized to animation frames.
 - A private publishing dashboard backed by Supabase Auth, Postgres, Storage, and Row Level Security.
 
 ## A living CMS
 
-Thirteen stations are the current collection, **not a fixed limit**. The unified CMS supports software, games and artwork through Supabase. Publishing an entry needs no code changes or cave rebuild. This update awaits its approved production data migration: compatibility mode still combines the preserved curated catalog with CMS content until the verified cutover.
+Thirteen stations are the current collection, **not a fixed limit**. Supabase is the authoritative source for every public software project, game and artwork. The ten original curated projects have been imported with their content, media and links preserved. Publishing an entry needs no code changes or cave rebuild. The original catalog file remains an import/recovery reference; the production feed uses published CMS records only.
 
 The server reads published content on each request. An open mine refreshes every 60 seconds and on focus/visibility while idle. Titles, covers, galleries, order, station count, progression, and the return loop adapt to the current catalog. Refreshes preserve the selected project by ID; unpublishing an inspected item returns visitors to the current collection. Missing images receive a text presentation. Mewdi's pixel sprite is intentionally excluded without deleting its CMS record.
 
-Studio at `/admin` supports drafts, publishing, cover/gallery/process uploads, technologies, platform/features, repository/demo/download links, portrait or landscape presentation, featuring, and atomic station ordering. Artwork omits irrelevant software fields. After migration and `MEDISSL_UNIFIED_CMS=true`, every entry—including the ten imported projects—is managed here. Unsaved editor text and selected files persist in the browser. Database and storage writes require membership in `public.admin_users`; authenticating alone does not grant editing rights.
+Studio at `/admin` supports drafts, publishing, cover/gallery/process uploads, technologies, platform/features, repository/demo/download links, portrait or landscape presentation, featuring, and atomic station ordering. Artwork omits irrelevant software fields. Every entry—including the ten imported projects—is managed here. Production uses `MEDISSL_UNIFIED_CMS=true`; apply the reviewed migrations before enabling this setting on a separate database. Unsaved editor text and selected files persist in the browser. Database and storage writes require membership in `public.admin_users`; authenticating alone does not grant editing rights.
 
 ## Controls and accessibility
 
